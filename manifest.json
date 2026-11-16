@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "omnicontext",
   "display_name": "OmniContext",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Persistent, cross-device memory for Claude: your profile, your projects, and resumable handoffs.",
   "long_description": "OmniContext gives every Claude session the same long-term memory: who you are, what you're working on, and where you left off. Refer to \"my game project\" and Claude knows which one you mean. Save a handoff on one device and resume it on another. Data is plain files in ~/.omnicontext, synced through a private git repo you own.",
   "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },

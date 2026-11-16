@@ -7,6 +7,10 @@ on:
       tag:
         description: Existing tag to build (e.g. v0.1.0)
         required: true
+      publish_only:
+        description: Only publish to npm + MCP Registry (skip app builds)
+        type: boolean
+        default: false
 permissions:
   contents: write
 env:
@@ -31,6 +35,7 @@ jobs:
 
   desktop:
     needs: release
+    if: ${{ !inputs.publish_only }}
     strategy:
       fail-fast: false
       matrix:
@@ -62,12 +67,13 @@ jobs:
   npm:
     needs: release
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'push' }}
     permissions:
       contents: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22

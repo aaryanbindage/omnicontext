@@ -1,6 +1,6 @@
 {
   "name": "omnicontext",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Persistent, cross-device memory for Claude: your profile, your projects, and resumable handoffs — shared by every Claude session (Claude Code plugin + MCP server + desktop app).",
   "type": "module",
   "bin": {
