@@ -6,6 +6,7 @@ import path from 'node:path';
 import { Store } from '../src/store.js';
 import { resolveProjects } from '../src/resolve.js';
 import { buildContext } from '../src/context.js';
+import { execFileSync } from 'node:child_process';
 
 const tmp = () => new Store(fs.mkdtempSync(path.join(os.tmpdir(), 'omni-')));
 
@@ -49,4 +50,71 @@ test('handoffs round-trip and show in context', () => {
   assert.match(ctx, /Starfall/);
   s.setHandoffStatus(h.id, 'resumed');
   assert.equal(s.listHandoffs({ status: 'open' }).length, 0);
+});
+
+test('forget removes matching facts only', () => {
+  const s = tmp();
+  s.remember('Prefers TypeScript');
+  s.remember('Uses a Mac at work');
+  assert.equal(s.forget('typescript').length, 1);
+  assert.doesNotMatch(s.getProfile(), /TypeScript/);
+  assert.match(s.getProfile(), /Uses a Mac/);
+  assert.equal(s.forget('nothing like this').length, 0);
+});
+
+test('inbox captures can be filed as facts or notes', () => {
+  const s = tmp();
+  s.upsertProject({ name: 'Starfall', aliases: ['my game'] });
+  const a = s.capture('boss should drop a key', { project: 'starfall', source: 'Apple Watch' });
+  const b = s.capture('I am vegetarian');
+  const c = s.capture('random');
+  assert.equal(s.listInbox().length, 3);
+  assert.match(buildContext(s), /Inbox \(3/);
+  s.fileInbox(a.id, { as: 'note' });
+  s.fileInbox(b.id, { as: 'fact', text: 'Is vegetarian' });
+  s.fileInbox(c.id, { as: 'dismiss' });
+  assert.equal(s.listInbox().length, 0);
+  assert.equal(s.getProject('starfall').notes[0].text, 'boss should drop a key');
+  assert.match(s.getProfile(), /- Is vegetarian/);
+});
+
+test('snapshot is deterministic and covers everything', () => {
+  const s = tmp();
+  s.upsertProject({ name: 'Starfall', aliases: ['my game'] });
+  s.saveHandoff({ project: 'starfall', title: 'Boss AI', summary: 'x' });
+  s.capture('idea');
+  assert.equal(s.writeSnapshot(), true);
+  assert.equal(s.writeSnapshot(), false);
+  const snap = JSON.parse(fs.readFileSync(s.snapshotPath, 'utf8'));
+  assert.equal(snap.format, 1);
+  assert.equal(snap.projects[0].slug, 'starfall');
+  assert.equal(snap.handoffs[0].title, 'Boss AI');
+  assert.equal(snap.inbox[0].text, 'idea');
+});
+
+test('handoffs record git state of cwd', () => {
+  const s = tmp();
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'omni-repo-'));
+  const git = (...a) => execFileSync('git', a, { cwd: repo, stdio: 'ignore' });
+  try {
+    git('init', '-q', '-b', 'feature');
+    git('-c', 'user.email=a@b', '-c', 'user.name=a', 'commit', '-q', '--allow-empty', '-m', 'x');
+  } catch {
+    return; // git missing
+  }
+  fs.writeFileSync(path.join(repo, 'wip.txt'), 'x');
+  const h = s.saveHandoff({ title: 't', summary: 's', cwd: repo });
+  assert.equal(h.git.branch, 'feature');
+  assert.deepEqual(h.git.uncommitted, ['wip.txt']);
+});
+
+test('export and import round-trip', () => {
+  const a = tmp();
+  a.remember('Likes tea');
+  a.upsertProject({ name: 'Starfall' });
+  a.saveHandoff({ title: 't', summary: 's' });
+  const b = tmp();
+  const r = b.importAll(JSON.parse(JSON.stringify(a.exportAll())));
+  assert.deepEqual(r, { projects: 1, handoffs: 1, inbox: 0 });
+  assert.match(b.getProfile(), /Likes tea/);
 });

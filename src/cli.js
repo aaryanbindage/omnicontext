@@ -16,6 +16,9 @@ Usage:
   omnicontext status                      Data folder, device, sync state
 
   omnicontext remember "<fact>"           Add a fact to your profile
+  omnicontext forget "<words>"            Remove profile facts containing these words
+  omnicontext capture "<text>" [--project P]   Drop a quick note in the inbox
+  omnicontext inbox                       List inbox items (captures from the watch and elsewhere)
   omnicontext profile [--edit FILE]       Print profile, or replace it from FILE
   omnicontext projects                    List projects
   omnicontext project add <name> [--alias A]... [--tag T]... [--desc D] [--path DIR] [--repo URL]
@@ -27,6 +30,8 @@ Usage:
   omnicontext sync --github [NAME]        Create a private GitHub repo (via gh) and sync to it
   omnicontext sync --remote <git-url>     Sync to any git remote you own
   omnicontext device <name>               Name this device
+  omnicontext export [FILE]               Write everything to one JSON file (stdout if no FILE)
+  omnicontext import FILE [--replace-profile]   Merge an export into this device's memory
 
   omnicontext install claude-desktop      Add the MCP server to Claude Desktop
   omnicontext install claude-code         Install the Claude Code plugin
@@ -115,7 +120,7 @@ export async function main(argv = process.argv.slice(2)) {
     case 'status': {
       const st = syncStatus(store.home);
       console.log(`Data:     ${store.home}\nDevice:   ${store.device}`);
-      console.log(`Projects: ${store.listProjects().length}   Open handoffs: ${store.listHandoffs({ status: 'open' }).length}`);
+      console.log(`Projects: ${store.listProjects().length}   Open handoffs: ${store.listHandoffs({ status: 'open' }).length}   Inbox: ${store.listInbox().length}`);
       console.log(`Sync:     ${st.configured ? `${st.remote}${st.dirty ? ' (unsynced changes)' : ''}` : 'not configured (omnicontext sync --github)'}`);
       return;
     }
@@ -124,6 +129,36 @@ export async function main(argv = process.argv.slice(2)) {
       if (!pos.length) throw new Error('Usage: omnicontext remember "<fact>"');
       console.log('Saved:', store.remember(pos.join(' ')));
       return;
+
+    case 'forget': {
+      const removed = store.forget(pos.join(' '));
+      console.log(removed.length ? `Removed:\n${removed.join('\n')}` : 'No matching fact.');
+      return;
+    }
+
+    case 'capture': {
+      const item = store.capture(pos.join(' '), { project: typeof flags.project === 'string' ? flags.project : '' });
+      return console.log(`Captured ${item.id}`);
+    }
+
+    case 'inbox':
+      for (const i of store.listInbox()) console.log(`${i.id}  ${i.text}${i.project ? `  (${i.project})` : ''}  — ${i.source}`);
+      return;
+
+    case 'export': {
+      const json = JSON.stringify(store.exportAll(), null, 2) + '\n';
+      if (pos[0]) {
+        fs.writeFileSync(pos[0], json);
+        return console.log(`Exported to ${pos[0]}`);
+      }
+      return process.stdout.write(json);
+    }
+
+    case 'import': {
+      if (!pos[0]) throw new Error('Usage: omnicontext import FILE');
+      const r = store.importAll(JSON.parse(fs.readFileSync(pos[0], 'utf8')), { replaceProfile: !!flags['replace-profile'] });
+      return console.log(`Imported ${r.projects} projects, ${r.handoffs} handoffs, ${r.inbox} inbox items.`);
+    }
 
     case 'profile':
       if (typeof flags.edit === 'string') store.setProfile(fs.readFileSync(flags.edit, 'utf8'));

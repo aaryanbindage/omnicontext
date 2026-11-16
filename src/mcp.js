@@ -1,15 +1,27 @@
 // MCP server (stdio). Works in Claude Code, Claude Desktop, and any MCP client.
 
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
-import { Store, VERSION } from './store.js';
+import { Store, VERSION, gitStateOf } from './store.js';
 import { resolveProjects } from './resolve.js';
 import { buildContext } from './context.js';
 import { sync, syncStatus } from './sync.js';
 
 const text = (t) => ({ content: [{ type: 'text', text: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }] });
 const fail = (t) => ({ content: [{ type: 'text', text: t }], isError: true });
+
+/** How to get this device's checkout to where the handoff left off. */
+function gitSection(h, device) {
+  const g = h.git;
+  if (!g) return '';
+  const lines = [`\n## Git state on ${h.device}`, `Branch \`${g.branch}\` at \`${g.commit}\`${g.remote ? ` (${g.remote})` : ''}.`];
+  if (g.unpushed) lines.push(`⚠ ${g.unpushed} commit(s) were not pushed from ${h.device}; they won't be on the remote.`);
+  if (g.uncommitted?.length)
+    lines.push(`⚠ Uncommitted changes on ${h.device} (not available here unless pushed): ${g.uncommitted.slice(0, 10).join(', ')}${g.uncommitted.length > 10 ? ', …' : ''}`);
+  if (h.device !== device) lines.push(`To match it here: \`git fetch && git checkout ${g.branch} && git pull\`.`);
+  return lines.join('\n') + '\n';
+}
 
 export async function startMcpServer(store = new Store()) {
   const server = new McpServer({ name: 'omnicontext', version: VERSION });
@@ -69,6 +81,22 @@ export async function startMcpServer(store = new Store()) {
       const line = store.remember(fact);
       changed();
       return text(`Saved to profile: ${line}`);
+    }),
+  );
+
+  server.registerTool(
+    'forget',
+    {
+      title: 'Forget a fact',
+      description: 'Remove profile facts (bullet lines) that contain the given text, e.g. when the user says something is no longer true.',
+      inputSchema: { text: z.string().min(3).describe('Words from the fact to remove') },
+      annotations: { destructiveHint: true },
+    },
+    guard(async ({ text: q }) => {
+      const removed = store.forget(q);
+      if (!removed.length) return fail(`No profile fact contains "${q}". Use get_profile to see the exact wording.`);
+      changed();
+      return text(`Removed ${removed.length} line(s):\n${removed.join('\n')}`);
     }),
   );
 
@@ -187,7 +215,9 @@ export async function startMcpServer(store = new Store()) {
     },
     guard(async ({ title, summary, next_steps, project, files, cwd }) => {
       const proj = project ? store.getProject(project) || resolveProjects(store.listProjects(), project, 1)[0]?.project : null;
-      const h = store.saveHandoff({ title, summary, nextSteps: next_steps, files, cwd, project: proj?.slug || project });
+      // Claude Code starts MCP servers in the project folder, so fall back to it to capture the git state.
+      const dir = cwd || (gitStateOf(process.cwd()) ? process.cwd() : '');
+      const h = store.saveHandoff({ title, summary, nextSteps: next_steps, files, cwd: dir, project: proj?.slug || project });
       changed();
       return text(`Handoff saved: ${h.id}. Resume on any device with "resume ${h.title}" or /omnicontext:resume.`);
     }),
@@ -238,6 +268,7 @@ export async function startMcpServer(store = new Store()) {
       return text(
         `# Resuming: ${h.title}\nFrom ${h.device} at ${h.createdAt}${proj ? ` · project ${proj.name}` : ''}\n` +
           (localPath ? `Project folder on this device: ${localPath}\n` : proj ? `Project folder isn't linked on this device yet.\n` : '') +
+          gitSection(h, store.device) +
           `\n## Summary\n${h.summary}\n` +
           (h.nextSteps?.length ? `\n## Next steps\n${h.nextSteps.map((s) => `- ${s}`).join('\n')}\n` : '') +
           (h.files?.length ? `\n## Files\n${h.files.map((s) => `- ${s}`).join('\n')}\n` : ''),
@@ -277,8 +308,89 @@ export async function startMcpServer(store = new Store()) {
         for (const n of p.notes || []) if (n.text.toLowerCase().includes(q)) hits.push({ in: `project:${p.slug}`, text: n.text, at: n.at });
       }
       for (const h of store.listHandoffs({ status: 'all' }))
-        if (`${h.title} ${h.summary}`.toLowerCase().includes(q)) hits.push({ in: `handoff:${h.id}`, text: h.title, status: h.status });
+        if (`${h.title} ${h.summary} ${(h.nextSteps || []).join(' ')}`.toLowerCase().includes(q))
+          hits.push({ in: `handoff:${h.id}`, text: h.title, status: h.status });
+      for (const i of store.listInbox()) if (i.text.toLowerCase().includes(q)) hits.push({ in: `inbox:${i.id}`, text: i.text });
       return text(hits.length ? hits.slice(0, 30) : `Nothing found for "${query}".`);
+    }),
+  );
+
+  server.registerTool(
+    'capture',
+    {
+      title: 'Capture to inbox',
+      description:
+        "Drop a quick thought into the user's inbox to sort out later (all devices see it). Prefer remember / add_project_note when you already know where it belongs.",
+      inputSchema: {
+        text: z.string().min(1),
+        project: z.string().optional().describe('Project it probably relates to'),
+      },
+    },
+    guard(async ({ text: t, project }) => {
+      const item = store.capture(t, { project });
+      changed();
+      return text(`Captured ${item.id}.`);
+    }),
+  );
+
+  server.registerTool(
+    'list_inbox',
+    {
+      title: 'List inbox',
+      description: 'Quick captures (for example dictated on the Apple Watch app) waiting to be filed.',
+      inputSchema: {},
+      annotations: { readOnlyHint: true },
+    },
+    guard(async () => {
+      const items = store.listInbox();
+      return text(items.length ? items : 'Inbox is empty.');
+    }),
+  );
+
+  server.registerTool(
+    'file_inbox',
+    {
+      title: 'File inbox item',
+      description:
+        'Move an inbox item into memory: as a profile fact, as a note on a project, or dismiss it. You may pass cleaned-up `text` (dictations are often rough).',
+      inputSchema: {
+        id: z.string(),
+        as: z.enum(['fact', 'note', 'dismiss']),
+        project: z.string().optional().describe('Required when as=note, unless the item already names a project'),
+        text: z.string().optional().describe('Rewritten wording to store instead of the raw capture'),
+      },
+    },
+    guard(async ({ id, as, project, text: t }) => {
+      const target = project ? store.getProject(project) || resolveProjects(store.listProjects(), project, 1)[0]?.project : null;
+      const r = store.fileInbox(id, { as, project: target?.slug || project, text: t });
+      changed();
+      return text(as === 'dismiss' ? `Dismissed ${id}.` : `Filed ${id} as ${as}${as === 'note' ? ` on ${r.result}` : ''}.`);
+    }),
+  );
+
+  // Read-only resources, for clients that browse MCP resources.
+  server.registerResource(
+    'profile',
+    'omnicontext://profile',
+    { title: 'Profile', description: "The user's profile", mimeType: 'text/markdown' },
+    async (uri) => ({ contents: [{ uri: uri.href, mimeType: 'text/markdown', text: store.getProfile() }] }),
+  );
+  server.registerResource(
+    'briefing',
+    'omnicontext://context',
+    { title: 'Briefing', description: 'The full session briefing', mimeType: 'text/markdown' },
+    async (uri) => ({ contents: [{ uri: uri.href, mimeType: 'text/markdown', text: buildContext(store) }] }),
+  );
+  server.registerResource(
+    'project',
+    new ResourceTemplate('omnicontext://projects/{slug}', {
+      list: async () => ({
+        resources: store.listProjects().map((p) => ({ uri: `omnicontext://projects/${p.slug}`, name: p.name, mimeType: 'application/json' })),
+      }),
+    }),
+    { title: 'Project', description: 'One project with notes', mimeType: 'application/json' },
+    async (uri, { slug }) => ({
+      contents: [{ uri: uri.href, mimeType: 'application/json', text: JSON.stringify(store.getProject(String(slug)), null, 2) }],
     }),
   );
 

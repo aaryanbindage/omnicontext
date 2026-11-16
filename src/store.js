@@ -4,14 +4,17 @@
 //   profile.md            who you are (markdown, free-form)
 //   projects/<slug>.json  one per project
 //   handoffs/<id>.json    resumable work, one per handoff
+//   inbox/<id>.json       quick captures (e.g. dictated on a watch) waiting to be filed
+//   snapshot.json         everything above in one file, for read-only clients like the watch app
 //   local.json            device-only settings (never synced)
 
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
-export const VERSION = '0.1.3';
+export const VERSION = '0.2.0';
 
 export function defaultHome() {
   return process.env.OMNICONTEXT_HOME || path.join(os.homedir(), '.omnicontext');
@@ -76,6 +79,7 @@ export class Store {
   ensure() {
     fs.mkdirSync(path.join(this.home, 'projects'), { recursive: true });
     fs.mkdirSync(path.join(this.home, 'handoffs'), { recursive: true });
+    fs.mkdirSync(path.join(this.home, 'inbox'), { recursive: true });
     if (!fs.existsSync(this.profilePath)) fs.writeFileSync(this.profilePath, PROFILE_TEMPLATE);
     const gitignore = path.join(this.home, '.gitignore');
     if (!fs.existsSync(gitignore)) fs.writeFileSync(gitignore, 'local.json\n*.tmp\n');
@@ -129,6 +133,19 @@ export class Store {
     lines.splice(end, 0, line);
     this.setProfile(lines.join('\n'));
     return line;
+  }
+  /** Remove profile bullet lines containing `text` (case-insensitive). Returns the removed lines. */
+  forget(text) {
+    const q = String(text).trim().toLowerCase();
+    if (q.length < 3) throw new Error('Give at least 3 characters of the fact to forget');
+    const removed = [];
+    const kept = this.getProfile().split('\n').filter((l) => {
+      const hit = /^\s*[-*]\s/.test(l) && l.toLowerCase().includes(q);
+      if (hit) removed.push(l.trim());
+      return !hit;
+    });
+    if (removed.length) this.setProfile(kept.join('\n'));
+    return removed;
   }
 
   // ---- projects --------------------------------------------------------
@@ -229,9 +246,9 @@ export class Store {
   }
   saveHandoff({ project, title, summary, nextSteps = [], files = [], cwd = '' }) {
     if (!summary) throw new Error('A handoff needs a summary');
-    const stamp = now().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
-    const id = `${stamp}-${crypto.randomBytes(2).toString('hex')}`;
-    const proj = project ? this.getProject(project) : null;
+    const id = newId();
+    let proj = project ? this.getProject(project) : null;
+    if (!proj && cwd) proj = this.projectForCwd(cwd);
     const h = {
       id,
       title: title || summary.split('\n')[0].slice(0, 80),
@@ -244,6 +261,8 @@ export class Store {
       status: 'open',
       createdAt: now(),
     };
+    const g = cwd ? gitStateOf(cwd) : null;
+    if (g) h.git = g;
     writeJson(this.handoffPath(id), h);
     if (proj) this.touchProject(proj.slug);
     return h;
@@ -273,6 +292,137 @@ export class Store {
   deleteHandoff(id) {
     fs.rmSync(this.handoffPath(id), { force: true });
   }
+
+  // ---- inbox -----------------------------------------------------------
+
+  inboxPath(id) {
+    return path.join(this.home, 'inbox', `${String(id).replace(/[^\w-]/g, '')}.json`);
+  }
+  /** Quick capture to file later: a thought dictated on the watch, a note from the CLI. */
+  capture(text, { project = '', source } = {}) {
+    const t = String(text ?? '').trim();
+    if (!t) throw new Error('Nothing to capture');
+    const item = { id: newId(), text: t, project, source: source || this.device, createdAt: now() };
+    writeJson(this.inboxPath(item.id), item);
+    return item;
+  }
+  listInbox() {
+    return listJson(path.join(this.home, 'inbox')).sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+  }
+  /**
+   * File an inbox item: as a profile fact, as a note on a project, or drop it.
+   * `text` overrides the stored wording (e.g. a cleaned-up version of a dictation).
+   */
+  fileInbox(id, { as, project, text } = {}) {
+    const item = readJson(this.inboxPath(id), null);
+    if (!item) throw new Error(`No inbox item "${id}"`);
+    const body = text || item.text;
+    let result;
+    if (as === 'fact') result = this.remember(body);
+    else if (as === 'note') {
+      const p = this.getProject(project || item.project);
+      if (!p) throw new Error(`No project "${project || item.project}" to file the note under`);
+      this.addProjectNote(p.slug, body);
+      result = p.slug;
+    } else if (as !== 'dismiss') throw new Error('`as` must be fact, note or dismiss');
+    fs.rmSync(this.inboxPath(id), { force: true });
+    return { item, filedAs: as, result };
+  }
+
+  // ---- snapshot --------------------------------------------------------
+
+  get snapshotPath() {
+    return path.join(this.home, 'snapshot.json');
+  }
+  /** One-file summary for read-only clients (the watch app). Deterministic, so unchanged data means no new commit. */
+  buildSnapshot() {
+    const projects = this.listProjects().map((p) => ({
+      name: p.name,
+      slug: p.slug,
+      aliases: p.aliases || [],
+      tags: p.tags || [],
+      status: p.status || 'active',
+      description: p.description || '',
+      repo: p.repo || '',
+      devices: Object.keys(p.paths || {}),
+      notes: (p.notes || []).slice(-10),
+      lastActiveAt: p.lastActiveAt || p.updatedAt || p.createdAt || '',
+    }));
+    const all = this.listHandoffs({ status: 'all' });
+    const handoffs = [...all.filter((h) => h.status === 'open'), ...all.filter((h) => h.status !== 'open').slice(0, 10)];
+    const inbox = this.listInbox();
+    const stamps = [
+      ...projects.map((p) => p.lastActiveAt),
+      ...all.map((h) => h.doneAt || h.resumedAt || h.createdAt),
+      ...inbox.map((i) => i.createdAt),
+    ].filter(Boolean).sort();
+    return {
+      format: 1,
+      updatedAt: stamps[stamps.length - 1] || '',
+      profile: this.getProfile().replace(/<!--[\s\S]*?-->/g, '').replace(/\n{3,}/g, '\n\n').trim(),
+      projects,
+      handoffs,
+      inbox,
+    };
+  }
+  writeSnapshot() {
+    const next = JSON.stringify(this.buildSnapshot(), null, 1) + '\n';
+    let prev = '';
+    try {
+      prev = fs.readFileSync(this.snapshotPath, 'utf8');
+    } catch {}
+    if (prev !== next) fs.writeFileSync(this.snapshotPath, next);
+    return prev !== next;
+  }
+
+  // ---- export / import -------------------------------------------------
+
+  exportAll() {
+    return {
+      omnicontext: VERSION,
+      exportedAt: now(),
+      profile: this.getProfile(),
+      projects: this.listProjects(),
+      handoffs: this.listHandoffs({ status: 'all' }),
+      inbox: this.listInbox(),
+    };
+  }
+  /** Merge an export into this store. Existing records with the same id/slug are overwritten. */
+  importAll(data, { replaceProfile = false } = {}) {
+    if (!data || typeof data !== 'object' || !('projects' in data)) throw new Error('Not an OmniContext export');
+    if (data.profile && (replaceProfile || this.getProfile().trim() === PROFILE_TEMPLATE.trim())) this.setProfile(data.profile);
+    for (const p of data.projects || []) if (p?.slug) writeJson(this.projectPath(p.slug), p);
+    for (const h of data.handoffs || []) if (h?.id) writeJson(this.handoffPath(h.id), h);
+    for (const i of data.inbox || []) if (i?.id) writeJson(this.inboxPath(i.id), i);
+    return { projects: (data.projects || []).length, handoffs: (data.handoffs || []).length, inbox: (data.inbox || []).length };
+  }
+}
+
+function newId() {
+  const stamp = now().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+  return `${stamp}-${crypto.randomBytes(2).toString('hex')}`;
+}
+
+/** Branch, commit and uncommitted files of the repo at `cwd`, so another device can pick up the same state. */
+export function gitStateOf(cwd) {
+  const git = (args) => {
+    try {
+      return execFileSync('git', args, { cwd, encoding: 'utf8', timeout: 4000, windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    } catch {
+      return null;
+    }
+  };
+  const commit = git(['rev-parse', '--short', 'HEAD']);
+  if (!commit) return null;
+  const status = git(['status', '--porcelain']) || '';
+  const upstream = git(['rev-list', '--count', '@{u}..HEAD']);
+  return {
+    branch: git(['rev-parse', '--abbrev-ref', 'HEAD']) || '',
+    commit,
+    remote: git(['remote', 'get-url', 'origin']) || '',
+    uncommitted: status.split('\n').filter(Boolean).slice(0, 30).map((l) => l.slice(3)),
+    unpushed: upstream === null ? null : Number(upstream),
+  };
 }
 
 export function normalizeRepo(url) {

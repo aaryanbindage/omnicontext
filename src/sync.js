@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { Store } from './store.js';
 
 function git(home, args, { timeout = 30000, allowFail = false } = {}) {
   try {
@@ -53,6 +54,9 @@ function ensureRepo(home) {
 }
 
 function commitAll(home, device) {
+  try {
+    new Store(home).writeSnapshot();
+  } catch {}
   git(home, ['add', '-A']);
   if (git(home, ['status', '--porcelain'])) {
     git(home, ['commit', '-q', '-m', `sync from ${device} ${new Date().toISOString()}`]);
@@ -87,6 +91,8 @@ export function sync(home, device = os.hostname(), { allowUnrelated = false, tim
         return { ok: false, reason: 'merge failed; resolve manually in ' + home };
       }
       pulled = before !== git(home, ['rev-parse', 'HEAD'], { allowFail: true });
+      // The merge may have brought in other devices' records; refresh the snapshot so it covers them.
+      if (pulled) commitAll(home, device);
     }
   } else {
     return { ok: false, committed, reason: 'could not reach remote (offline?)' };
@@ -104,6 +110,7 @@ export function pull(home, { timeout = 8000 } = {}) {
   if (!git(home, ['rev-parse', '-q', '--verify', 'origin/main'], { allowFail: true })) return { ok: true };
   const ok = git(home, ['merge', '-q', '--no-edit', '-X', 'ours', 'origin/main'], { allowFail: true }) !== null;
   if (!ok) git(home, ['merge', '--abort'], { allowFail: true });
+  else commitAll(home, os.hostname());
   return { ok };
 }
 

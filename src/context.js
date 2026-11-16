@@ -26,14 +26,20 @@ export function projectLine(p, device, current) {
 
 export function handoffLine(h) {
   const next = h.nextSteps?.length ? ` Next: ${h.nextSteps.slice(0, 2).join('; ')}` : '';
-  return `- \`${h.id}\` **${h.title}**${h.project ? ` (${h.project})` : ''} — from ${h.device}, ${ago(h.createdAt)}.${next}`;
+  const branch = h.git?.branch ? ` Branch \`${h.git.branch}\`.` : '';
+  return `- \`${h.id}\` **${h.title}**${h.project ? ` (${h.project})` : ''} — from ${h.device}, ${ago(h.createdAt)}.${branch}${next}`;
 }
+
+const STALE_DAYS = 30;
 
 export function buildContext(store, { cwd } = {}) {
   const device = store.device;
   const projects = store.listProjects();
   const current = store.projectForCwd(cwd);
-  const open = store.listHandoffs({ status: 'open', limit: 5 });
+  const allOpen = store.listHandoffs({ status: 'open' });
+  const fresh = allOpen.filter((h) => Date.now() - new Date(h.createdAt).getTime() < STALE_DAYS * 86400000);
+  const open = fresh.slice(0, 5);
+  const inbox = store.listInbox();
   const profile = store.getProfile().replace(/<!--[\s\S]*?-->/g, '').replace(/\n{3,}/g, '\n\n').trim();
 
   const out = [];
@@ -72,6 +78,15 @@ export function buildContext(store, { cwd } = {}) {
     out.push(`\n## Open handoffs (work that can be resumed)`);
     for (const h of open) out.push(handoffLine(h));
     out.push('If the user says "resume", "continue", or "pick up where I left off", call `resume_handoff`.');
+  }
+  const hidden = allOpen.length - open.length;
+  if (hidden > 0) out.push(`${open.length ? '' : '\n'}(${hidden} more open handoff${hidden > 1 ? 's' : ''}, older or beyond the first five: \`list_handoffs\`.)`);
+
+  if (inbox.length) {
+    out.push(`\n## Inbox (${inbox.length} quick capture${inbox.length > 1 ? 's' : ''} to file)`);
+    for (const i of inbox.slice(0, 10))
+      out.push(`- \`${i.id}\` "${i.text.slice(0, 200)}"${i.project ? ` (for ${i.project})` : ''} — from ${i.source}, ${ago(i.createdAt)}`);
+    out.push('At a natural moment, mention these and offer to file each one with `file_inbox` (as a profile fact, a project note, or dismiss).');
   }
 
   out.push(
