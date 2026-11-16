@@ -44,7 +44,7 @@ Download from **[Releases](https://github.com/aaryanbindage/omnicontext/releases
 |---|---|
 | Windows | `OmniContext-Setup-x.y.z.exe` (installer) or `…-Windows-x64.zip` (portable) |
 | macOS | `…-macOS-arm64.dmg` (Apple Silicon) / `…-macOS-x64.dmg` (Intel) |
-| Linux | `…-Linux-x86_64.AppImage` or `…-Linux-amd64.deb` |
+| Linux | `…-Linux-x86_64.AppImage` / `…-Linux-amd64.deb` (x64), `…-Linux-arm64.AppImage` / `…-Linux-arm64.deb` (ARM64, e.g. Raspberry Pi 4/5) |
 
 The app lets you edit your profile, projects and handoffs, set up sync, and connect Claude Code and Claude Desktop with one click. It stays in the tray and syncs in the background.
 
