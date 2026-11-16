@@ -1,0 +1,62 @@
+{
+  "name": "omnicontext",
+  "version": "0.1.0",
+  "description": "Persistent, cross-device memory for Claude: your profile, your projects, and resumable handoffs — shared by every Claude session (Claude Code plugin + MCP server + desktop app).",
+  "type": "module",
+  "bin": {
+    "omnicontext": "dist/omnicontext.mjs"
+  },
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "dist/omnicontext.mjs",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/",
+    "mcpb": "node scripts/pack-mcpb.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "mcpName": "io.github.aaryanbindage/omnicontext",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "claude-code-plugin",
+    "claude-desktop",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "memory",
+    "persistent-memory",
+    "context",
+    "ai-memory",
+    "cross-device",
+    "sync",
+    "handoff",
+    "llm"
+  ],
+  "author": "aaryanbindage (https://github.com/aaryanbindage)",
+  "license": "MIT",
+  "homepage": "https://aaryanbindage.github.io/omnicontext/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aaryanbindage/omnicontext.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aaryanbindage/omnicontext/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
