@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.aaryanbindage/omnicontext",
+  "title": "OmniContext",
+  "description": "Persistent cross-device memory for Claude: your profile, projects, and resumable handoffs.",
+  "repository": { "url": "https://github.com/aaryanbindage/omnicontext", "source": "github" },
+  "websiteUrl": "https://aaryanbindage.github.io/omnicontext/",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "omnicontext",
+      "version": "0.1.0",
+      "transport": { "type": "stdio" },
+      "packageArguments": [{ "type": "positional", "value": "mcp" }],
+      "environmentVariables": [
+        { "name": "OMNICONTEXT_HOME", "description": "Data folder (default ~/.omnicontext)", "isRequired": false }
+      ]
+    }
+  ]
+}

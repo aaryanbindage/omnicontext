@@ -1,0 +1,46 @@
+{
+  "manifest_version": "0.3",
+  "name": "omnicontext",
+  "display_name": "OmniContext",
+  "version": "0.1.0",
+  "description": "Persistent, cross-device memory for Claude: your profile, your projects, and resumable handoffs.",
+  "long_description": "OmniContext gives every Claude session the same long-term memory: who you are, what you're working on, and where you left off. Refer to \"my game project\" and Claude knows which one you mean. Save a handoff on one device and resume it on another. Data is plain files in ~/.omnicontext, synced through a private git repo you own.",
+  "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
+  "homepage": "https://aaryanbindage.github.io/omnicontext/",
+  "repository": { "type": "git", "url": "https://github.com/aaryanbindage/omnicontext" },
+  "documentation": "https://github.com/aaryanbindage/omnicontext#readme",
+  "support": "https://github.com/aaryanbindage/omnicontext/issues",
+  "icon": "icon.png",
+  "license": "MIT",
+  "keywords": ["memory", "context", "projects", "handoff", "sync", "cross-device"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/omnicontext.mjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/omnicontext.mjs", "mcp"]
+    }
+  },
+  "tools": [
+    { "name": "get_context", "description": "Briefing: profile, projects, open handoffs" },
+    { "name": "get_profile", "description": "The user's profile markdown" },
+    { "name": "remember", "description": "Save a durable fact about the user" },
+    { "name": "update_profile", "description": "Rewrite the profile" },
+    { "name": "list_projects", "description": "List projects" },
+    { "name": "resolve_project", "description": "Resolve \"my game project\" to a project" },
+    { "name": "get_project", "description": "Project details, notes and handoffs" },
+    { "name": "upsert_project", "description": "Create or update a project" },
+    { "name": "add_project_note", "description": "Add a note to a project" },
+    { "name": "save_handoff", "description": "Save work to resume on any device" },
+    { "name": "list_handoffs", "description": "List handoffs" },
+    { "name": "resume_handoff", "description": "Resume a handoff" },
+    { "name": "complete_handoff", "description": "Mark a handoff done" },
+    { "name": "search_memory", "description": "Search profile, notes and handoffs" },
+    { "name": "sync_now", "description": "Sync with other devices" }
+  ],
+  "prompts": [
+    { "name": "resume", "description": "Continue the most recent open handoff", "text": "Call resume_handoff and continue that work." },
+    { "name": "handoff", "description": "Save the current work as a handoff", "text": "Summarise the current work and call save_handoff." }
+  ],
+  "compatibility": { "platforms": ["darwin", "win32", "linux"], "runtimes": { "node": ">=18.0.0" } }
+}
