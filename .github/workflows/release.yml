@@ -92,7 +92,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           v=$(node -p "require('./package.json').version")
-          if ! npm view "@aaryanbindage/omnicontext@$v" version >/dev/null 2>&1; then echo "npm package not published; skipping registry"; exit 0; fi
+          # A fresh npm version can take a few minutes to become visible; the registry checks it exists.
+          for i in $(seq 1 20); do npm view "@aaryanbindage/omnicontext@$v" version >/dev/null 2>&1 && break; sleep 30; done
+          if ! npm view "@aaryanbindage/omnicontext@$v" version >/dev/null 2>&1; then echo "npm package not visible; skipping registry"; exit 0; fi
           curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
           ./mcp-publisher login github-oidc
           ./mcp-publisher publish || echo "::warning::MCP Registry publish failed (maybe this version already exists)"
