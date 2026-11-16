@@ -1,6 +1,6 @@
 {
   "name": "@aaryanbindage/omnicontext",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Persistent cross-device memory for every Claude session: knows who you are, your projects (\"my game project\" just works), and lets you resume work started on another device.",
   "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
   "homepage": "https://aaryanbindage.github.io/omnicontext/",

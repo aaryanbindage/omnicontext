@@ -30,7 +30,10 @@ Claude:                Resuming Starfall (the Godot space roguelike). Last sessi
 
 - **Knows you.** A profile (role, preferences, tools, facts) shared with every session. Claude adds to it when you tell it something lasting (`remember`).
 - **Knows your projects.** Name them once, give them nicknames, and "my game project", "the website" or "that bot" resolve to the right one in any session. Each project keeps notes, its repo, and its folder on each device.
-- **Resumes across devices.** `/omnicontext:handoff` saves a self-contained summary and next steps. On another machine, `/omnicontext:resume` picks it up and opens the project's folder on that device.
+- **Resumes across devices.** `/omnicontext:handoff` saves a self-contained summary and next steps, plus the git branch and commit and any uncommitted or unpushed work. On another machine, `/omnicontext:resume` picks it up, opens the project's folder on that device, and tells you how to get the checkout to the same state.
+- **Inbox for quick thoughts.** Dictate on your Apple Watch, or run `omnicontext capture "…"`. The next Claude session offers to file each one as a profile fact or a project note (`/omnicontext:inbox`).
+- **Apple Watch app.** A standalone watchOS viewer that needs no iPhone. It shows open handoffs, projects and your profile, lets you mark handoffs done, and dictates captures. It talks straight to your private GitHub data repo. See [watch/](watch/).
+- **Forgets on request.** "That's not true anymore" → `forget`.
 - **Syncs without a cloud service.** Your memory is a folder of plain Markdown and JSON files (`~/.omnicontext`) synced through a **private git repo you own**. Nothing goes to a third-party server.
 - **Works everywhere.** It's a Claude Code plugin with auto-injected context, an MCP server for Claude Desktop, Cursor, VS Code, Windsurf and Zed, a desktop app for Mac, Windows and Linux, and a CLI.
 
@@ -92,6 +95,9 @@ npm i -g @aaryanbindage/omnicontext
 omnicontext project add "Starfall" --alias "my game" --tag godot --desc "2D space roguelike" --path .
 omnicontext resolve "my game project"
 omnicontext remember "Prefers TypeScript and short answers"
+omnicontext forget "TypeScript"
+omnicontext capture "try a grappling hook in level 3" --project starfall
+omnicontext export backup.json     # everything in one file; import with: omnicontext import backup.json
 omnicontext sync --github          # one-time: create a private repo and sync
 ```
 
@@ -119,14 +125,15 @@ You can do the same from the desktop app's **Sync & devices** tab. After that, s
 | Tool | Purpose |
 |---|---|
 | `get_context` | Full briefing: profile, projects, open handoffs (for clients without hooks) |
-| `get_profile` / `update_profile` / `remember` | Read and update what Claude knows about you |
+| `get_profile` / `update_profile` / `remember` / `forget` | Read and update what Claude knows about you |
 | `list_projects` / `get_project` / `upsert_project` / `add_project_note` | Manage projects, nicknames, per-device folders, notes |
 | `resolve_project` | "my game project" → the matching project, ranked |
 | `save_handoff` / `list_handoffs` / `resume_handoff` / `complete_handoff` | Cross-device resume |
-| `search_memory` | Search the profile, notes, and handoffs |
+| `capture` / `list_inbox` / `file_inbox` | Quick captures (for example from the watch) and filing them |
+| `search_memory` | Search the profile, notes, handoffs, and inbox |
 | `sync_now` | Push and pull with your other devices |
 
-It also provides the prompts `resume` and `handoff`.
+It also provides the prompts `resume` and `handoff`, and the resources `omnicontext://profile`, `omnicontext://context` and `omnicontext://projects/{slug}`.
 
 ## Data format
 
@@ -134,7 +141,9 @@ It also provides the prompts `resume` and `handoff`.
 ~/.omnicontext/
   profile.md               # you — edit freely
   projects/starfall.json   # name, aliases, tags, description, repo, paths per device, notes
-  handoffs/<id>.json       # title, summary, next steps, files, device, status
+  handoffs/<id>.json       # title, summary, next steps, files, device, status, git state
+  inbox/<id>.json          # quick captures waiting to be filed
+  snapshot.json            # everything above in one file, written on sync (read by the watch app)
   local.json               # this device only (name, sync prefs) — not synced
 ```
 

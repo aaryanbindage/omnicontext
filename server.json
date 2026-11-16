@@ -5,12 +5,12 @@
   "description": "Persistent cross-device memory for Claude: your profile, projects, and resumable handoffs.",
   "repository": { "url": "https://github.com/aaryanbindage/omnicontext", "source": "github" },
   "websiteUrl": "https://aaryanbindage.github.io/omnicontext/",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "@aaryanbindage/omnicontext",
-      "version": "0.1.3",
+      "version": "0.2.0",
       "transport": { "type": "stdio" },
       "packageArguments": [{ "type": "positional", "value": "mcp" }],
       "environmentVariables": [

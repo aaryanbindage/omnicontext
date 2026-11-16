@@ -1,7 +1,7 @@
 {
   "name": "omnicontext-desktop",
   "productName": "OmniContext",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "OmniContext desktop app — manage the persistent, cross-device memory every Claude session shares.",
   "homepage": "https://aaryanbindage.github.io/omnicontext/",
   "author": {
