@@ -1,0 +1,9 @@
+// Defaults. Put your own values in Local.xcconfig (git-ignored), e.g.
+//   GITHUB_CLIENT_ID = Iv23liXXXXXXXXXXXXXX
+//   DEVELOPMENT_TEAM = ABCDE12345
+//   WATCH_BUNDLE_ID = com.yourname.omnicontext.watch
+
+GITHUB_CLIENT_ID =
+WATCH_BUNDLE_ID = io.github.aaryanbindage.omnicontext.watch
+
+#include? "Local.xcconfig"

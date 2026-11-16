@@ -1,0 +1,35 @@
+# Generate the Xcode project with XcodeGen:  brew install xcodegen && xcodegen
+name: OmniContextWatch
+options:
+  bundleIdPrefix: io.github.aaryanbindage
+  deploymentTarget:
+    watchOS: "10.0"
+configFiles:
+  Debug: Config.xcconfig
+  Release: Config.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.2.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  OmniContext:
+    type: application
+    platform: watchOS
+    sources: [OmniContext]
+    info:
+      path: OmniContext/Info.plist
+      properties:
+        CFBundleDisplayName: OmniContext
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        WKApplication: true
+        WKWatchOnly: true
+        OCGitHubClientID: $(GITHUB_CLIENT_ID)
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(WATCH_BUNDLE_ID)
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO

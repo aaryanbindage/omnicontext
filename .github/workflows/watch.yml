@@ -1,0 +1,24 @@
+name: watchOS app
+on:
+  push:
+    paths: ['watch/**', '.github/workflows/watch.yml']
+  pull_request:
+    paths: ['watch/**']
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - name: Generate project
+        working-directory: watch
+        run: xcodegen generate
+      - name: Build for the watchOS simulator
+        working-directory: watch
+        run: |
+          xcodebuild -project OmniContextWatch.xcodeproj -scheme OmniContext \
+            -destination 'generic/platform=watchOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build > build.log 2>&1 && ok=1 || ok=0
+          grep -E 'error:|warning:|BUILD' build.log | sort -u | head -80 || true
+          [ "$ok" = 1 ]
