@@ -52,11 +52,9 @@
   "bugs": {
     "url": "https://github.com/aaryanbindage/omnicontext/issues"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.32.2",
-    "zod": "^4.6.7"
-  },
   "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7",
     "esbuild": "^0.28.2"
   }
 }

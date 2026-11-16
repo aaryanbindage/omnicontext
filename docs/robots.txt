@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://aaryanbindage.github.io/omnicontext/sitemap.xml

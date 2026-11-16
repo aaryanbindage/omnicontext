@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OmniContext — Persistent Cross-Device Memory for Claude (Claude Code Plugin + MCP Server)</title>
+<meta name="description" content="OmniContext gives every Claude session long-term memory: your profile, your projects, and resumable handoffs, synced across Mac, Windows and Linux. Claude Code plugin, MCP server for Claude Desktop and Cursor, and a desktop app. Free and open source." />
+<meta name="keywords" content="Claude memory, Claude Code plugin, MCP server, persistent memory, Claude Desktop, cross-device, context, handoff, resume session, AI memory, model context protocol" />
+<link rel="canonical" href="https://aaryanbindage.github.io/omnicontext/" />
+<link rel="icon" href="icon.png" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="OmniContext — Persistent memory for every Claude session" />
+<meta property="og:description" content="Claude knows who you are, which project “my game project” means, and lets you resume work started on another device." />
+<meta property="og:url" content="https://aaryanbindage.github.io/omnicontext/" />
+<meta property="og:image" content="https://aaryanbindage.github.io/omnicontext/shot-projects.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OmniContext",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Windows, macOS, Linux",
+  "description": "Persistent, cross-device memory for Claude: profile, projects, and resumable handoffs. Claude Code plugin, MCP server, and desktop app.",
+  "url": "https://aaryanbindage.github.io/omnicontext/",
+  "downloadUrl": "https://github.com/aaryanbindage/omnicontext/releases/latest",
+  "softwareVersion": "0.1.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "codeRepository": "https://github.com/aaryanbindage/omnicontext"
+}
+</script>
+<style>
+:root { --bg:#f7f8fc; --panel:#fff; --text:#161927; --muted:#5d6278; --line:#e1e4ef; --accent:#4f46e5; --accent2:#0d9488; --code:#eef0f7; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0d0f15; --panel:#151822; --text:#e7e9f2; --muted:#9298b0; --line:#252938; --accent:#8b93ff; --accent2:#2dd4bf; --code:#1b1f2c; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+a { color:var(--accent); }
+.wrap { max-width:1040px; margin:0 auto; padding:0 16px; }
+nav { display:flex; align-items:center; gap:12px; padding:18px 0; }
+nav img { width:34px; height:34px; }
+nav b { font-size:18px; }
+nav .sp { flex:1; }
+nav a.l { color:var(--muted); text-decoration:none; font-size:15px; }
+.hero { padding:56px 0 36px; text-align:center; }
+h1 { font-size:clamp(32px,5.5vw,54px); line-height:1.08; margin:0 0 18px; letter-spacing:-.02em; }
+h1 span { background:linear-gradient(90deg,var(--accent),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.lead { font-size:clamp(17px,2.2vw,20px); color:var(--muted); max-width:720px; margin:0 auto 28px; }
+.cta { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.btn { display:inline-block; padding:12px 20px; border-radius:10px; font-weight:600; text-decoration:none; border:1px solid var(--line); background:var(--panel); color:var(--text); }
+.btn.p { background:var(--accent); border-color:var(--accent); color:#fff; }
+.chat { max-width:720px; margin:40px auto 0; text-align:left; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:18px 20px; font-family:ui-monospace,Consolas,monospace; font-size:14px; }
+.chat p { margin:6px 0; }
+.chat .u { color:var(--accent); }
+.chat .c { color:var(--muted); }
+section { padding:44px 0; }
+h2 { font-size:28px; margin:0 0 20px; letter-spacing:-.01em; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+.card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; }
+.card h3 { margin:0 0 6px; font-size:17px; }
+.card p { margin:0; color:var(--muted); font-size:15px; }
+pre { background:var(--code); border-radius:10px; padding:14px 16px; overflow-x:auto; font-size:13.5px; margin:8px 0 0; }
+code { font-family:ui-monospace,Consolas,monospace; }
+.shot { width:100%; border-radius:14px; border:1px solid var(--line); box-shadow:0 18px 50px rgba(20,20,60,.12); }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:720px) { .two { grid-template-columns:1fr; } nav a.l.h { display:none; } }
+footer { padding:40px 0 60px; color:var(--muted); font-size:14px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <img src="icon.png" alt="OmniContext logo" /><b>OmniContext</b><span class="sp"></span>
+    <a class="l h" href="#install">Install</a>
+    <a class="l h" href="#how">How it works</a>
+    <a class="l" href="https://github.com/aaryanbindage/omnicontext">GitHub</a>
+  </nav>
+
+  <header class="hero">
+    <h1>One memory for <span>every Claude session</span></h1>
+    <p class="lead">OmniContext gives Claude long-term, cross-device memory. It knows who you are, which project “my game project” means, and lets you resume work on your laptop that you started on your desktop. It works in Claude Code, Claude Desktop, and any MCP client.</p>
+    <div class="cta">
+      <a class="btn p" href="https://github.com/aaryanbindage/omnicontext/releases/latest">Download for Mac · Windows · Linux</a>
+      <a class="btn" href="#install">Install the Claude Code plugin</a>
+    </div>
+    <div class="chat">
+      <p><span class="u">you (laptop) ›</span> continue my game project</p>
+      <p><span class="c">claude ›</span> Resuming <b>Starfall</b>, your Godot space roguelike. Yesterday on your desktop you finished the enemy state machine. Next is tuning the boss fight. The project is at ~/code/starfall on this machine…</p>
+    </div>
+  </header>
+
+  <section id="how">
+    <h2>What Claude remembers</h2>
+    <div class="grid">
+      <div class="card"><h3>👤 You</h3><p>Your role, preferences, tools and facts. Tell Claude something lasting once, and every session knows it after that.</p></div>
+      <div class="card"><h3>📁 Your projects</h3><p>Names, nicknames, repos, folders on each device, and notes. Loose references like “the website” or “that bot” just work.</p></div>
+      <div class="card"><h3>🔁 Where you left off</h3><p>Handoffs hold a summary and next steps. Save on one device and resume on another with <code>/omnicontext:resume</code>.</p></div>
+      <div class="card"><h3>🔒 Yours</h3><p>Plain Markdown and JSON files synced through a private git repo you own. There's no server, no account and no telemetry.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="two">
+      <img class="shot" src="shot-projects.png" alt="OmniContext desktop app: projects with nicknames" loading="lazy" />
+      <img class="shot" src="shot-preview.png" alt="The context briefing Claude sees at session start" loading="lazy" />
+    </div>
+  </section>
+
+  <section id="install">
+    <h2>Install</h2>
+    <div class="grid">
+      <div class="card"><h3>Claude Code plugin</h3><p>Injects context at session start, syncs at the end, and adds slash commands.</p>
+<pre><code>/plugin marketplace add aaryanbindage/omnicontext
+/plugin install omnicontext@omnicontext</code></pre></div>
+      <div class="card"><h3>Claude Desktop</h3><p>Open <a href="https://github.com/aaryanbindage/omnicontext/releases/latest"><code>omnicontext.mcpb</code></a>, or run:</p>
+<pre><code>npx omnicontext install claude-desktop</code></pre></div>
+      <div class="card"><h3>Cursor · VS Code · Windsurf · Zed</h3><p>Any MCP client:</p>
+<pre><code>{"mcpServers":{"omnicontext":
+ {"command":"npx","args":["-y","omnicontext","mcp"]}}}</code></pre></div>
+      <div class="card"><h3>Sync your devices</h3><p>Do this once per device:</p>
+<pre><code>omnicontext sync --github        # first device
+omnicontext sync --remote &lt;url&gt;  # others</code></pre></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>FAQ</h2>
+    <div class="grid">
+      <div class="card"><h3>How is this different from Claude's built-in memory?</h3><p>It's one memory shared by Claude Code, Claude Desktop and other MCP tools on all your machines. It stores structured projects and handoffs, and the plain files are yours.</p></div>
+      <div class="card"><h3>Where is my data?</h3><p>In <code>~/.omnicontext</code> on each device and in the git remote you choose. Nothing else.</p></div>
+      <div class="card"><h3>Is it free?</h3><p>Yes. It's MIT-licensed open source.</p></div>
+    </div>
+  </section>
+
+  <footer>OmniContext · MIT · <a href="https://github.com/aaryanbindage/omnicontext">github.com/aaryanbindage/omnicontext</a> · <a href="https://www.npmjs.com/package/omnicontext">npm</a><br/>Not affiliated with Anthropic. Claude is a trademark of Anthropic.</footer>
+</div>
+</body>
+</html>
