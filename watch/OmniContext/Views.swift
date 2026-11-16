@@ -116,19 +116,20 @@ struct HomeView: View {
                 case .settings: SettingsView()
                 }
             }
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        Task { await model.refresh() }
-                    } label: {
-                        if model.loading { ProgressView() } else { Image(systemName: "arrow.clockwise") }
-                    }
-                }
-            }
         }
     }
 
     @ViewBuilder private var footer: some View {
+        Button {
+            Task { await model.refresh() }
+        } label: {
+            HStack {
+                Label("Refresh", systemImage: "arrow.clockwise")
+                Spacer()
+                if model.loading { ProgressView().frame(width: 20, height: 20) }
+            }
+        }
+        .disabled(model.loading)
         if let last = model.lastRefresh {
             Text("Updated \(last, style: .relative) ago")
                 .font(.footnote)
