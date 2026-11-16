@@ -18,6 +18,8 @@ export function projectLine(p, device, current) {
   const elsewhere = Object.keys(p.paths || {}).filter((d) => d !== device);
   if (here) line += ` · here: \`${here}\``;
   else if (elsewhere.length) line += ` · on: ${elsewhere.join(', ')}`;
+  const last = p.notes?.[p.notes.length - 1];
+  if (last) line += ` · latest note: ${last.text.slice(0, 140)}`;
   if (current) line += ' ← **current directory**';
   return line;
 }

@@ -1,6 +1,7 @@
 // omnicontext CLI: MCP server, Claude Code hooks, and management commands.
 
 import fs from 'node:fs';
+import { spawn } from 'node:child_process';
 import { Store, VERSION } from './store.js';
 import { buildContext, projectLine, handoffLine } from './context.js';
 import { resolveProjects } from './resolve.js';
@@ -100,10 +101,9 @@ export async function main(argv = process.argv.slice(2)) {
         const p = store.projectForCwd(cwd);
         if (p) store.touchProject(p.slug);
       } else if (pos[0] === 'session-end') {
-        if (store.getLocal().autoSync !== false) {
-          try {
-            sync(store.home, store.device, { timeout: 15000 });
-          } catch {}
+        // Hand off to a detached process so Claude can exit without waiting on the network.
+        if (store.getLocal().autoSync !== false && syncStatus(store.home).configured) {
+          spawn(process.execPath, [process.argv[1], 'sync'], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
         }
       }
       return;
