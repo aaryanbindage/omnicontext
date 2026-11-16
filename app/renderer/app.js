@@ -144,6 +144,42 @@ $('#handoffList').onclick = async (e) => {
   loadHandoffs();
 };
 
+// ---- inbox --------------------------------------------------------------
+async function loadInbox() {
+  const [items, all] = await Promise.all([call('listInbox'), call('listProjects')]);
+  projects = all;
+  const opts = '<option value="">Project…</option>' + all.map((p) => `<option value="${esc(p.slug)}">${esc(p.name)}</option>`).join('');
+  $('#inboxList').innerHTML = items.map((i) => `
+    <div class="card" data-id="${esc(i.id)}">
+      <textarea rows="2">${esc(i.text)}</textarea>
+      <p class="muted">from ${esc(i.source)} · ${esc(when(i.createdAt))}</p>
+      <div class="row">
+        <button data-act="fact">Save as fact</button>
+        <select>${opts.replace(`value="${esc(i.project)}"`, `value="${esc(i.project)}" selected`)}</select>
+        <button data-act="note">Add as note</button>
+        <span class="grow"></span><button data-act="dismiss" class="danger">Dismiss</button>
+      </div>
+    </div>`).join('') || '<p class="muted">Inbox is empty.</p>';
+}
+$('#inboxList').onclick = async (e) => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const card = btn.closest('[data-id]');
+  const as = btn.dataset.act;
+  const project = card.querySelector('select').value;
+  if (as === 'note' && !project) return toast('Pick a project first', true);
+  await act(() => call('fileInbox', card.dataset.id, { as, project, text: card.querySelector('textarea').value.trim() }),
+    as === 'dismiss' ? 'Dismissed' : as === 'fact' ? 'Saved to profile' : 'Note added');
+  refresh('inbox');
+};
+$('#captureBtn').onclick = async () => {
+  const t = $('#captureInput').value.trim();
+  if (!t) return;
+  await act(() => call('capture', t), 'Captured');
+  $('#captureInput').value = '';
+  refresh('inbox');
+};
+
 // ---- sync ---------------------------------------------------------------
 function renderSync() {
   const s = info.sync;
@@ -165,6 +201,8 @@ $('#saveDevice').onclick = async () => { await act(() => call('setDevice', $('#d
 $('#autoSync').onchange = (e) => act(() => call('setLocal', { autoSync: e.target.checked }));
 $('#syncMinutes').onchange = (e) => act(() => call('setLocal', { syncMinutes: Number(e.target.value) || 5 }), 'Applies after restart');
 $('#openData').onclick = (e) => { e.preventDefault(); call('openData'); };
+$('#exportBtn').onclick = () => act(() => call('exportAll'), (f) => (f ? `Exported to ${f}` : 'Cancelled'));
+$('#importBtn').onclick = () => act(() => call('importAll'), (r) => (r ? `Imported ${r.projects} projects, ${r.handoffs} handoffs` : 'Cancelled'));
 $('#ghCreate').onclick = async () => { await act(() => call('connectGithub', $('#ghName').value.trim()), syncMsg); refresh('sync'); };
 $('#connectRemote').onclick = async () => {
   const url = $('#remoteUrl').value.trim();
@@ -184,6 +222,10 @@ $('#copyCfg').onclick = () => act(() => call('copy', $('#genericCfg').textConten
 async function refresh(tab = document.querySelector('nav button.active').dataset.tab) {
   info = await call('info');
   renderSync();
+  const n = (await call('listInbox')).length;
+  $('#inboxCount').hidden = !n;
+  $('#inboxCount').textContent = n;
+  if (tab === 'inbox') loadInbox();
   if (tab === 'profile' && document.activeElement !== $('#profileText')) $('#profileText').value = await call('getProfile');
   if (tab === 'projects') { await loadProjects(); if (current?.slug) showProject(projects.find((p) => p.slug === current.slug) || null); }
   if (tab === 'handoffs') loadHandoffs();

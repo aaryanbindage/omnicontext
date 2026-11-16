@@ -50,6 +50,20 @@ const api = {
   listHandoffs: (status) => store.listHandoffs({ status: status || 'all' }),
   setHandoffStatus: (id, status) => store.setHandoffStatus(id, status),
   deleteHandoff: (id) => store.deleteHandoff(id),
+  listInbox: () => store.listInbox(),
+  capture: (text, project) => store.capture(text, { project }),
+  fileInbox: (id, opts) => store.fileInbox(id, opts),
+  exportAll: async () => {
+    const r = await dialog.showSaveDialog(win, { defaultPath: 'omnicontext-export.json', filters: [{ name: 'JSON', extensions: ['json'] }] });
+    if (r.canceled) return null;
+    fs.writeFileSync(r.filePath, JSON.stringify(store.exportAll(), null, 2) + '\n');
+    return r.filePath;
+  },
+  importAll: async () => {
+    const r = await dialog.showOpenDialog(win, { properties: ['openFile'], filters: [{ name: 'JSON', extensions: ['json'] }] });
+    if (r.canceled) return null;
+    return store.importAll(JSON.parse(fs.readFileSync(r.filePaths[0], 'utf8')));
+  },
   context: () => buildContext(store, {}),
   setDevice: (name) => store.setLocal({ deviceName: name }),
   setLocal: (patch) => store.setLocal(patch),

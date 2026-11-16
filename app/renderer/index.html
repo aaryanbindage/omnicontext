@@ -13,6 +13,7 @@
       <button data-tab="profile" class="active">About me</button>
       <button data-tab="projects">Projects</button>
       <button data-tab="handoffs">Handoffs</button>
+      <button data-tab="inbox">Inbox <span id="inboxCount" class="count" hidden></span></button>
       <button data-tab="sync">Sync &amp; devices</button>
       <button data-tab="connect">Connect Claude</button>
       <button data-tab="preview">What Claude sees</button>
@@ -71,6 +72,15 @@
       <div id="handoffList" class="cards"></div>
     </section>
 
+    <section id="inbox" class="tab">
+      <header><h1>Inbox</h1><p>Quick captures from the Apple Watch app, the CLI (<code>omnicontext capture</code>) or Claude. File each one as a profile fact or a project note. Claude also offers to do this at the start of a session.</p></header>
+      <div class="row">
+        <input id="captureInput" placeholder="Capture something…" />
+        <button id="captureBtn">Capture</button>
+      </div>
+      <div id="inboxList" class="cards"></div>
+    </section>
+
     <section id="sync" class="tab">
       <header><h1>Sync &amp; devices</h1><p>Your memory is a folder of plain files synced through a private git repo you own.</p></header>
       <div class="card">
@@ -92,6 +102,15 @@
         <div class="row"><input id="ghName" value="omnicontext-data" /><button id="ghCreate" class="primary">Create private GitHub repo</button></div>
         <p>Or use any git remote you own (GitHub, GitLab, Gitea, a server…). On your other devices, connect the <em>same</em> URL.</p>
         <div class="row"><input id="remoteUrl" placeholder="https://github.com/you/omnicontext-data.git" /><button id="connectRemote">Connect</button></div>
+      </div>
+      <div class="card">
+        <h3>Apple Watch</h3>
+        <p>The standalone watch app reads your GitHub data repo directly, with no phone needed. You can check handoffs, projects and your profile, and dictate captures into the inbox. <a href="#" data-url="https://github.com/aaryanbindage/omnicontext/tree/main/watch">Set it up</a>.</p>
+      </div>
+      <div class="card">
+        <h3>Backup</h3>
+        <p>Everything in one JSON file. Import merges it into this device's memory.</p>
+        <div class="row"><button id="exportBtn">Export…</button><button id="importBtn">Import…</button></div>
       </div>
     </section>
 
