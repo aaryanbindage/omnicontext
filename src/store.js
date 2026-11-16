@@ -11,7 +11,7 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.2';
 
 export function defaultHome() {
   return process.env.OMNICONTEXT_HOME || path.join(os.homedir(), '.omnicontext');

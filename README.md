@@ -13,7 +13,7 @@ Every Claude session — Claude Code, Claude Desktop, any MCP client, on any of 
 </p>
 
 <p align="center">
-<a href="https://www.npmjs.com/package/omnicontext"><img alt="npm" src="https://img.shields.io/npm/v/omnicontext"></a>
+<a href="https://www.npmjs.com/package/@aaryanbindage/omnicontext"><img alt="npm" src="https://img.shields.io/npm/v/@aaryanbindage/omnicontext"></a>
 <a href="https://github.com/aaryanbindage/omnicontext/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/aaryanbindage/omnicontext/actions/workflows/ci.yml/badge.svg"></a>
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
@@ -73,14 +73,14 @@ Requires Node.js 18+. You get:
 ### Claude Desktop & other MCP clients
 
 **One click:** download `omnicontext.mcpb` from Releases and open it with Claude Desktop.
-You can also use the desktop app (**Connect Claude → Install**) or run `npx omnicontext install claude-desktop`.
+You can also use the desktop app (**Connect Claude → Install**) or run `npx @aaryanbindage/omnicontext install claude-desktop`.
 
 **Manually** (Claude Desktop, Cursor, Windsurf, VS Code, Zed, Cline and others):
 
 ```json
 {
   "mcpServers": {
-    "omnicontext": { "command": "npx", "args": ["-y", "omnicontext", "mcp"] }
+    "omnicontext": { "command": "npx", "args": ["-y", "@aaryanbindage/omnicontext", "mcp"] }
   }
 }
 ```
@@ -88,7 +88,7 @@ You can also use the desktop app (**Connect Claude → Install**) or run `npx om
 ### CLI
 
 ```bash
-npm i -g omnicontext
+npm i -g @aaryanbindage/omnicontext
 omnicontext project add "Starfall" --alias "my game" --tag godot --desc "2D space roguelike" --path .
 omnicontext resolve "my game project"
 omnicontext remember "Prefers TypeScript and short answers"

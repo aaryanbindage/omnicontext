@@ -17,7 +17,7 @@ export function claudeDesktopConfigPath() {
 }
 
 /** Add (or replace) the "omnicontext" MCP server entry in Claude Desktop's config. */
-export function installClaudeDesktop(server = { command: 'npx', args: ['-y', 'omnicontext', 'mcp'] }) {
+export function installClaudeDesktop(server = { command: 'npx', args: ['-y', '@aaryanbindage/omnicontext', 'mcp'] }) {
   const file = claudeDesktopConfigPath();
   let cfg = {};
   if (fs.existsSync(file)) {

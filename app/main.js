@@ -59,7 +59,7 @@ const api = {
   installDesktop: (mode) =>
     installClaudeDesktop(
       mode === 'npx'
-        ? { command: 'npx', args: ['-y', 'omnicontext', 'mcp'] }
+        ? { command: 'npx', args: ['-y', '@aaryanbindage/omnicontext', 'mcp'] }
         : { command: process.execPath, args: [serverScript(), 'mcp'], env: { ELECTRON_RUN_AS_NODE: '1' } },
     ),
   installCode: () => installClaudeCode(),

@@ -24,7 +24,7 @@
   "description": "Persistent, cross-device memory for Claude: profile, projects, and resumable handoffs. Claude Code plugin, MCP server, and desktop app.",
   "url": "https://aaryanbindage.github.io/omnicontext/",
   "downloadUrl": "https://github.com/aaryanbindage/omnicontext/releases/latest",
-  "softwareVersion": "0.1.1",
+  "softwareVersion": "0.1.2",
   "license": "https://opensource.org/licenses/MIT",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "codeRepository": "https://github.com/aaryanbindage/omnicontext"
@@ -113,10 +113,10 @@ footer { padding:40px 0 60px; color:var(--muted); font-size:14px; text-align:cen
 <pre><code>/plugin marketplace add aaryanbindage/omnicontext
 /plugin install omnicontext@omnicontext</code></pre></div>
       <div class="card"><h3>Claude Desktop</h3><p>Open <a href="https://github.com/aaryanbindage/omnicontext/releases/latest"><code>omnicontext.mcpb</code></a>, or run:</p>
-<pre><code>npx omnicontext install claude-desktop</code></pre></div>
+<pre><code>npx @aaryanbindage/omnicontext install claude-desktop</code></pre></div>
       <div class="card"><h3>Cursor · VS Code · Windsurf · Zed</h3><p>Any MCP client:</p>
 <pre><code>{"mcpServers":{"omnicontext":
- {"command":"npx","args":["-y","omnicontext","mcp"]}}}</code></pre></div>
+ {"command":"npx","args":["-y","@aaryanbindage/omnicontext","mcp"]}}}</code></pre></div>
       <div class="card"><h3>Sync your devices</h3><p>Do this once per device:</p>
 <pre><code>omnicontext sync --github        # first device
 omnicontext sync --remote &lt;url&gt;  # others</code></pre></div>
@@ -132,7 +132,7 @@ omnicontext sync --remote &lt;url&gt;  # others</code></pre></div>
     </div>
   </section>
 
-  <footer>OmniContext · MIT · <a href="https://github.com/aaryanbindage/omnicontext">github.com/aaryanbindage/omnicontext</a> · <a href="https://www.npmjs.com/package/omnicontext">npm</a><br/>Not affiliated with Anthropic. Claude is a trademark of Anthropic.</footer>
+  <footer>OmniContext · MIT · <a href="https://github.com/aaryanbindage/omnicontext">github.com/aaryanbindage/omnicontext</a> · <a href="https://www.npmjs.com/package/@aaryanbindage/omnicontext">npm</a><br/>Not affiliated with Anthropic. Claude is a trademark of Anthropic.</footer>
 </div>
 </body>
 </html>

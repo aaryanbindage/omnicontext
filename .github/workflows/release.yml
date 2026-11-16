@@ -85,14 +85,14 @@ jobs:
         run: |
           if [ -z "$NODE_AUTH_TOKEN" ]; then echo "NPM_TOKEN not set; skipping"; exit 0; fi
           v=$(node -p "require('./package.json').version")
-          if npm view "omnicontext@$v" version >/dev/null 2>&1; then echo "already published"; exit 0; fi
+          if npm view "@aaryanbindage/omnicontext@$v" version >/dev/null 2>&1; then echo "already published"; exit 0; fi
           npm publish --access public --provenance
       - name: Publish to the official MCP Registry
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           v=$(node -p "require('./package.json').version")
-          if ! npm view "omnicontext@$v" version >/dev/null 2>&1; then echo "npm package not published; skipping registry"; exit 0; fi
+          if ! npm view "@aaryanbindage/omnicontext@$v" version >/dev/null 2>&1; then echo "npm package not published; skipping registry"; exit 0; fi
           curl -sL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
           ./mcp-publisher login github-oidc
           ./mcp-publisher publish || echo "::warning::MCP Registry publish failed (maybe this version already exists)"
