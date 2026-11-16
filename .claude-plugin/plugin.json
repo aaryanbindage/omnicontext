@@ -1,0 +1,16 @@
+{
+  "name": "omnicontext",
+  "version": "0.1.0",
+  "description": "Persistent cross-device memory for every Claude session: knows who you are, your projects (\"my game project\" just works), and lets you resume work started on another device.",
+  "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
+  "homepage": "https://aaryanbindage.github.io/omnicontext/",
+  "repository": "https://github.com/aaryanbindage/omnicontext",
+  "license": "MIT",
+  "keywords": ["memory", "context", "sync", "handoff", "resume", "projects", "mcp", "cross-device"],
+  "mcpServers": {
+    "omnicontext": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/dist/omnicontext.mjs", "mcp"]
+    }
+  }
+}

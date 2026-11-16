@@ -1,0 +1,16 @@
+{
+  "name": "omnicontext",
+  "owner": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
+  "metadata": {
+    "description": "OmniContext — persistent, cross-device memory for Claude Code."
+  },
+  "plugins": [
+    {
+      "name": "omnicontext",
+      "source": "./",
+      "description": "Persistent cross-device memory: profile, projects, and resumable handoffs injected into every Claude Code session.",
+      "category": "productivity",
+      "tags": ["memory", "context", "sync", "productivity"]
+    }
+  ]
+}
