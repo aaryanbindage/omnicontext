@@ -2,7 +2,7 @@
 description: Resume work you started in another session or on another device
 argument-hint: "[project or topic — blank for most recent]"
 ---
-Call the omnicontext `resume_handoff` tool${ARGUMENTS:+ with query "$ARGUMENTS"} to load the handoff. Query: "$ARGUMENTS" (if empty, omit the query to get the most recent open handoff).
+Call the omnicontext `resume_handoff` tool to load the handoff. Pass query "$ARGUMENTS" if it is not empty; otherwise omit the query to get the most recent open handoff.
 
 Then:
 1. Restate in 2–4 lines where things stand and what's next.
