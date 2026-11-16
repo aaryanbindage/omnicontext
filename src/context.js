@@ -32,7 +32,7 @@ export function buildContext(store, { cwd } = {}) {
   const projects = store.listProjects();
   const current = store.projectForCwd(cwd);
   const open = store.listHandoffs({ status: 'open', limit: 5 });
-  const profile = store.getProfile().replace(/<!--[\s\S]*?-->/g, '').trim();
+  const profile = store.getProfile().replace(/<!--[\s\S]*?-->/g, '').replace(/\n{3,}/g, '\n\n').trim();
 
   const out = [];
   out.push(`# OmniContext — what you know about this user (synced across their devices)`);

@@ -3,8 +3,8 @@
 import path from 'node:path';
 
 const STOP = new Set(
-  'my the a an our this that those these project projects app apps thing stuff repo repository codebase code one ' +
-    'with for of on in to at i im i\'m working work about called named new old side'.split(' '),
+  ('my the a an our this that those these project projects app apps thing stuff repo repository codebase code one ' +
+    'with for of on in to at i im i\'m working work about called named new old side').split(' '),
 );
 
 const stem = (t) => (t.length > 4 && t.endsWith('ies') ? t.slice(0, -3) + 'y' : t.length > 3 && t.endsWith('s') ? t.slice(0, -1) : t);
