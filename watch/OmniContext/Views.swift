@@ -85,15 +85,13 @@ struct HomeView: View {
 
                 Section {
                     NavigationLink(value: Route.projects) {
-                        Label("Projects", systemImage: "folder")
-                            .badge(model.projects.count)
+                        CountRow(title: "Projects", icon: "folder", count: model.projects.count)
                     }
                     NavigationLink(value: Route.profile) {
                         Label("About me", systemImage: "person.crop.circle")
                     }
                     NavigationLink(value: Route.inbox) {
-                        Label("Inbox", systemImage: "tray")
-                            .badge(model.inbox.count)
+                        CountRow(title: "Inbox", icon: "tray", count: model.inbox.count)
                     }
                     NavigationLink(value: Route.settings) {
                         Label("Settings", systemImage: "gearshape")
@@ -135,6 +133,20 @@ struct HomeView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .listRowBackground(Color.clear)
+        }
+    }
+}
+
+struct CountRow: View {
+    let title: String
+    let icon: String
+    let count: Int
+
+    var body: some View {
+        HStack {
+            Label(title, systemImage: icon)
+            Spacer()
+            if count > 0 { Text("\(count)").foregroundStyle(.secondary) }
         }
     }
 }
