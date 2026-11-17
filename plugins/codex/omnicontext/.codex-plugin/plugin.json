@@ -1,0 +1,25 @@
+{
+  "name": "omnicontext",
+  "version": "0.4.0",
+  "description": "Persistent memory shared by Codex, Claude and every other agent you use, on every device: your profile, your projects and their nicknames, and resumable handoffs.",
+  "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
+  "homepage": "https://aaryanbindage.github.io/omnicontext/",
+  "repository": "https://github.com/aaryanbindage/omnicontext",
+  "license": "MIT",
+  "keywords": ["memory", "context", "handoff", "cross-device", "projects", "sync"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "OmniContext",
+    "shortDescription": "Shared memory across Codex, Claude and your devices",
+    "developerName": "aaryanbindage",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://aaryanbindage.github.io/omnicontext/",
+    "defaultPrompt": ["Resume where I left off", "What do you know about my projects?"],
+    "brandColor": "#7C5CFF",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}

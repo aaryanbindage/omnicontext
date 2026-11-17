@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>OmniContext — Persistent Cross-Device Memory for Claude (Claude Code Plugin + MCP Server)</title>
-<meta name="description" content="OmniContext gives every Claude session long-term memory: your profile, your projects, and resumable handoffs, synced across Mac, Windows and Linux. Claude Code plugin, MCP server for Claude Desktop and Cursor, and a desktop app. Free and open source." />
+<meta name="description" content="OmniContext gives Claude, Codex, Cursor, Gemini CLI and every MCP agent one shared long-term memory: your profile, your projects, and resumable handoffs, synced across Mac, Windows and Linux. Claude Code and Codex plugins, an MCP server, a desktop app and an Apple Watch app. Free and open source." />
 <meta name="keywords" content="Claude memory, Claude Code plugin, MCP server, persistent memory, Claude Desktop, cross-device, context, handoff, resume session, AI memory, model context protocol" />
 <link rel="canonical" href="https://aaryanbindage.github.io/omnicontext/" />
 <link rel="icon" href="icon.png" />
@@ -24,7 +24,7 @@
   "description": "Persistent, cross-device memory for Claude: profile, projects, and resumable handoffs. Claude Code plugin, MCP server, and desktop app.",
   "url": "https://aaryanbindage.github.io/omnicontext/",
   "downloadUrl": "https://github.com/aaryanbindage/omnicontext/releases/latest",
-  "softwareVersion": "0.3.0",
+  "softwareVersion": "0.4.0",
   "license": "https://opensource.org/licenses/MIT",
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "codeRepository": "https://github.com/aaryanbindage/omnicontext"
@@ -77,8 +77,8 @@ footer { padding:40px 0 60px; color:var(--muted); font-size:14px; text-align:cen
   </nav>
 
   <header class="hero">
-    <h1>One memory for <span>every Claude session</span></h1>
-    <p class="lead">OmniContext gives Claude long-term, cross-device memory. It knows who you are, which project “my game project” means, and lets you resume work on your laptop that you started on your desktop. It works in Claude Code, Claude Desktop, and any MCP client.</p>
+    <h1>One memory for <span>every AI agent</span></h1>
+    <p class="lead">OmniContext gives Claude long-term, cross-device memory. It knows who you are, which project “my game project” means, and lets you resume work on your laptop that you started on your desktop. It works in Claude Code, Claude Desktop, OpenAI Codex, Cursor, Gemini CLI and any MCP client, so you can start in Claude and resume in Codex.</p>
     <div class="cta">
       <a class="btn p" href="https://github.com/aaryanbindage/omnicontext/releases/latest">Download for Mac · Windows · Linux</a>
       <a class="btn" href="#install">Install the Claude Code plugin</a>
@@ -94,6 +94,7 @@ footer { padding:40px 0 60px; color:var(--muted); font-size:14px; text-align:cen
     <div class="grid">
       <div class="card"><h3>👤 You</h3><p>Your role, preferences, tools and facts. Tell Claude something lasting once, and every session knows it after that.</p></div>
       <div class="card"><h3>📁 Your projects</h3><p>Names, nicknames, repos, folders on each device, and notes. Loose references like “the website” or “that bot” just work.</p></div>
+      <div class="card"><h3>🤝 Every agent</h3><p>Claude and Codex plugins, plus one MCP server for Cursor, Gemini CLI and the rest. <code>npx @aaryanbindage/omnicontext install all</code> connects every agent on your machine to the same memory.</p></div>
       <div class="card"><h3>🔁 Where you left off</h3><p>Handoffs hold a summary and next steps. Save on one device and resume on another with <code>/omnicontext:resume</code>. The git branch and any unpushed work are saved with the handoff.</p></div>
       <div class="card"><h3>⌚ Apple Watch</h3><p>A standalone watch app with no iPhone needed. Check open handoffs and projects, and dictate thoughts into your inbox for the next Claude session to file.</p></div>
       <div class="card"><h3>🕸️ Knowledge graph</h3><p>An Obsidian-style graph of your projects, tags, topics, handoffs and facts, in the desktop app and on your watch.</p></div>

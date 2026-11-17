@@ -7,9 +7,9 @@ import { buildContext, projectLine, handoffLine } from './context.js';
 import { resolveProjects } from './resolve.js';
 import { buildGraph, neighborhood } from './graph.js';
 import { sync, pull, initSync, createGithubRemote, syncStatus } from './sync.js';
-import { installClaudeDesktop, installClaudeCode } from './install.js';
+import { installClaudeDesktop, installClaudeCode, installCodex, installCursor, installGemini, detectAgents } from './install.js';
 
-const HELP = `omnicontext ${VERSION} — persistent, cross-device memory for Claude
+const HELP = `omnicontext ${VERSION} — persistent, cross-device memory for Claude, Codex and every MCP agent
 
 Usage:
   omnicontext mcp                         Run the MCP server (stdio)
@@ -38,6 +38,10 @@ Usage:
 
   omnicontext install claude-desktop      Add the MCP server to Claude Desktop
   omnicontext install claude-code         Install the Claude Code plugin
+  omnicontext install codex               Add it to OpenAI Codex (CLI, IDE, app) + AGENTS.md
+  omnicontext install cursor              Add it to Cursor
+  omnicontext install gemini              Add it to Gemini CLI + GEMINI.md
+  omnicontext install all                 Every agent found on this machine
 
   omnicontext hook session-start|session-end   (used by the Claude Code plugin)
 
@@ -251,7 +255,28 @@ export async function main(argv = process.argv.slice(2)) {
         return console.log(`Added "omnicontext" to ${file}. Restart Claude Desktop.`);
       }
       if (pos[0] === 'claude-code') return console.log(installClaudeCode());
-      throw new Error('Usage: omnicontext install claude-desktop|claude-code');
+      const others = { codex: ['Codex', installCodex], cursor: ['Cursor', installCursor], gemini: ['Gemini CLI', installGemini] };
+      if (others[pos[0]]) {
+        const [name, fn] = others[pos[0]];
+        return console.log(`Updated ${fn().join(' and ')}. Restart ${name}.`);
+      }
+      if (pos[0] === 'all') {
+        const found = detectAgents();
+        const all = { 'claude-code': () => installClaudeCode(), 'claude-desktop': () => `updated ${installClaudeDesktop()}`, ...Object.fromEntries(Object.entries(others).map(([k, [, fn]]) => [k, () => `updated ${fn().join(', ')}`])) };
+        for (const [k, fn] of Object.entries(all)) {
+          if (!found[k]) {
+            console.log(`- ${k}: not found, skipped`);
+            continue;
+          }
+          try {
+            console.log(`- ${k}: ${fn().trim().split('\n').pop()}`);
+          } catch (e) {
+            console.log(`- ${k}: failed: ${e.message}`);
+          }
+        }
+        return console.log('Restart those apps to pick up OmniContext. They all share the same memory.');
+      }
+      throw new Error('Usage: omnicontext install claude-desktop|claude-code|codex|cursor|gemini|all');
     }
 
     default:

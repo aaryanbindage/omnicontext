@@ -1,7 +1,7 @@
 {
   "name": "@aaryanbindage/omnicontext",
-  "version": "0.3.0",
-  "description": "Persistent, cross-device memory for Claude: your profile, your projects, and resumable handoffs — shared by every Claude session (Claude Code plugin + MCP server + desktop app).",
+  "version": "0.4.0",
+  "description": "Persistent, cross-device memory shared by every AI agent: Claude Code, Claude Desktop, OpenAI Codex, Cursor, Gemini CLI and any MCP client. Your profile, your projects, and resumable handoffs.",
   "type": "module",
   "bin": {
     "omnicontext": "dist/omnicontext.mjs"
@@ -40,7 +40,12 @@
     "cross-device",
     "sync",
     "handoff",
-    "llm"
+    "llm",
+    "codex",
+    "openai-codex",
+    "cursor",
+    "gemini-cli",
+    "agents"
   ],
   "author": "aaryanbindage (https://github.com/aaryanbindage)",
   "license": "MIT",

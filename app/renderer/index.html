@@ -16,7 +16,7 @@
       <button data-tab="handoffs">Handoffs</button>
       <button data-tab="inbox">Inbox <span id="inboxCount" class="count" hidden></span></button>
       <button data-tab="sync">Sync &amp; devices</button>
-      <button data-tab="connect">Connect Claude</button>
+      <button data-tab="connect">Connect agents</button>
       <button data-tab="preview">What Claude sees</button>
     </nav>
     <div class="foot" id="syncBadge">…</div>
@@ -130,7 +130,7 @@
     </section>
 
     <section id="connect" class="tab">
-      <header><h1>Connect Claude</h1><p>Install once per device. Everything shares the same memory.</p></header>
+      <header><h1>Connect agents</h1><p>Install once per device. Claude, Codex, Cursor and Gemini all share the same memory, so a handoff saved in one can be resumed in another.</p></header>
       <div class="card">
         <h3>Claude Code</h3>
         <p>Plugin: injects your context at session start, adds <code>/omnicontext:handoff</code>, <code>/omnicontext:resume</code>, <code>/omnicontext:remember</code>, <code>/omnicontext:project</code>, and syncs on exit. Requires Node.js 18+.</p>
@@ -144,7 +144,17 @@
         <div class="row"><button id="installDesktop" class="primary">Install (uses this app, no Node needed)</button><button id="installDesktopNpx">Install via npx</button></div>
       </div>
       <div class="card">
-        <h3>Other MCP clients (Cursor, Windsurf, VS Code, Zed…)</h3>
+        <h3>OpenAI Codex</h3>
+        <p>Adds the MCP server to <code>~/.codex/config.toml</code> (used by the Codex CLI, IDE extension and app) and memory instructions to <code>~/.codex/AGENTS.md</code>. Requires Node.js 18+. Or install the plugin: <code>codex plugin marketplace add aaryanbindage/omnicontext</code>.</p>
+        <div class="row"><button id="installCodex" class="primary">Install for Codex</button></div>
+      </div>
+      <div class="card">
+        <h3>Cursor and Gemini CLI</h3>
+        <p>Adds the MCP server to <code>~/.cursor/mcp.json</code> or <code>~/.gemini/settings.json</code> (plus <code>GEMINI.md</code> instructions). Requires Node.js 18+.</p>
+        <div class="row"><button id="installCursor">Install for Cursor</button><button id="installGemini">Install for Gemini CLI</button></div>
+      </div>
+      <div class="card">
+        <h3>Other MCP clients (Windsurf, VS Code, Zed…)</h3>
         <pre id="genericCfg">{
   "mcpServers": {
     "omnicontext": { "command": "npx", "args": ["-y", "@aaryanbindage/omnicontext", "mcp"] }

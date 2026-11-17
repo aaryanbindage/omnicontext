@@ -2,12 +2,13 @@
 
 <h1 align="center">OmniContext</h1>
 
-<p align="center"><b>Persistent, cross-device memory for Claude.</b><br/>
-Every Claude session — Claude Code, Claude Desktop, any MCP client, on any of your machines — knows who you are, what you're working on, and where you left off.</p>
+<p align="center"><b>One memory for every AI agent, on every device.</b><br/>
+Claude Code, Claude Desktop, OpenAI Codex, Cursor, Gemini CLI and any MCP client, on any of your machines, know who you are, what you're working on, and where you left off. Start in Claude, resume in Codex.</p>
 
 <p align="center">
 <a href="https://github.com/aaryanbindage/omnicontext/releases/latest">Download (Mac · Windows · Linux)</a> ·
 <a href="#claude-code-plugin">Claude Code plugin</a> ·
+<a href="#openai-codex">Codex plugin</a> ·
 <a href="#claude-desktop--other-mcp-clients">MCP server</a> ·
 <a href="https://aaryanbindage.github.io/omnicontext/">Website</a>
 </p>
@@ -36,7 +37,8 @@ Claude:                Resuming Starfall (the Godot space roguelike). Last sessi
 - **Knowledge graph, Obsidian-style.** The desktop app's Graph tab draws everything in memory: you, projects, tags, devices, handoffs, facts, inbox and `[[Topics]]`. Projects link through shared tags and whenever one names another. Drag, zoom, search and filter, and click a node to see its connections. Claude can walk it with the `related` tool ("what else uses Godot?"), and the watch app can browse it too.
 - **Forgets on request.** "That's not true anymore" → `forget`.
 - **Syncs without a cloud service.** Your memory is a folder of plain Markdown and JSON files (`~/.omnicontext`) synced through a **private git repo you own**. Nothing goes to a third-party server.
-- **Works everywhere.** It's a Claude Code plugin with auto-injected context, an MCP server for Claude Desktop, Cursor, VS Code, Windsurf and Zed, a desktop app for Mac, Windows and Linux, and a CLI.
+- **Shared by all your agents.** Claude Code and Codex plugins inject your context at session start; Claude Desktop, Cursor, Gemini CLI, VS Code, Windsurf and Zed connect to the same MCP server. A handoff saved in Claude can be resumed in Codex (and vice versa), and each one records which agent wrote it. `omnicontext install all` wires up every agent it finds.
+- **Works everywhere.** A desktop app for Mac, Windows and Linux, a CLI, and an Apple Watch app.
 
 ## Install
 
@@ -74,10 +76,36 @@ Requires Node.js 18+. You get:
 | `/omnicontext:sync` | sync now |
 | MCP tools + skill | Claude resolves "my X project", saves notes and handoffs |
 
+### OpenAI Codex
+
+**Plugin** (skill + MCP server + SessionStart hook):
+
+```bash
+codex plugin marketplace add aaryanbindage/omnicontext
+```
+
+Then install **OmniContext** from the Plugins directory in Codex.
+
+**Or just the MCP server and instructions** (Codex CLI, IDE extension and app all read `~/.codex/config.toml`):
+
+```bash
+npx -y @aaryanbindage/omnicontext install codex
+```
+
+This adds `[mcp_servers.omnicontext]` to `~/.codex/config.toml` and a short OmniContext section to `~/.codex/AGENTS.md`. Re-running it updates both in place.
+
+### Every agent at once
+
+```bash
+npx -y @aaryanbindage/omnicontext install all     # Claude Code, Claude Desktop, Codex, Cursor, Gemini CLI — whichever are installed
+```
+
+Or one at a time: `install codex`, `install cursor`, `install gemini`, `install claude-code`, `install claude-desktop`. The desktop app has the same buttons under **Connect agents**.
+
 ### Claude Desktop & other MCP clients
 
 **One click:** download `omnicontext.mcpb` from Releases and open it with Claude Desktop.
-You can also use the desktop app (**Connect Claude → Install**) or run `npx @aaryanbindage/omnicontext install claude-desktop`.
+You can also use the desktop app (**Connect agents → Install**) or run `npx @aaryanbindage/omnicontext install claude-desktop`.
 
 **Manually** (Claude Desktop, Cursor, Windsurf, VS Code, Zed, Cline and others):
 

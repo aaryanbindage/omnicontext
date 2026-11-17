@@ -288,6 +288,9 @@ window.addEventListener('focus', () => refresh());
 $('#installCode').onclick = () => act(() => call('installCode'), 'Claude Code plugin installed — start a new session');
 $('#installDesktop').onclick = () => act(() => call('installDesktop', 'app'), (f) => `Added to ${f}\nRestart Claude Desktop.`);
 $('#installDesktopNpx').onclick = () => act(() => call('installDesktop', 'npx'), (f) => `Added to ${f}\nRestart Claude Desktop.`);
+$('#installCodex').onclick = () => act(() => call('installCodex'), (f) => `Updated ${f.join(' and ')}\nRestart Codex.`);
+$('#installCursor').onclick = () => act(() => call('installCursor'), (f) => `Updated ${f.join(', ')}\nRestart Cursor.`);
+$('#installGemini').onclick = () => act(() => call('installGemini'), (f) => `Updated ${f.join(' and ')}\nRestart Gemini CLI.`);
 $('#copyCfg').onclick = () => act(() => call('copy', $('#genericCfg').textContent), 'Copied');
 
 // ---- refresh ------------------------------------------------------------

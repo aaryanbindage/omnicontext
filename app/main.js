@@ -7,7 +7,7 @@ import { Store, VERSION } from '../src/store.js';
 import { buildContext } from '../src/context.js';
 import { buildGraph } from '../src/graph.js';
 import { sync, initSync, createGithubRemote, syncStatus } from '../src/sync.js';
-import { installClaudeDesktop, installClaudeCode, claudeDesktopConfigPath } from '../src/install.js';
+import { installClaudeDesktop, installClaudeCode, installCodex, installCursor, installGemini, claudeDesktopConfigPath } from '../src/install.js';
 
 const store = new Store();
 let win = null;
@@ -79,6 +79,9 @@ const api = {
         : { command: process.execPath, args: [serverScript(), 'mcp'], env: { ELECTRON_RUN_AS_NODE: '1' } },
     ),
   installCode: () => installClaudeCode(),
+  installCodex: () => installCodex(),
+  installCursor: () => installCursor(),
+  installGemini: () => installGemini(),
   pickFolder: async () => {
     const r = await dialog.showOpenDialog(win, { properties: ['openDirectory'] });
     return r.canceled ? null : r.filePaths[0];

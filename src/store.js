@@ -15,7 +15,7 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { buildGraph } from './graph.js';
 
-export const VERSION = '0.3.0';
+export const VERSION = '0.4.0';
 
 export function defaultHome() {
   return process.env.OMNICONTEXT_HOME || path.join(os.homedir(), '.omnicontext');
@@ -245,7 +245,7 @@ export class Store {
   handoffPath(id) {
     return path.join(this.home, 'handoffs', `${String(id).replace(/[^\w-]/g, '')}.json`);
   }
-  saveHandoff({ project, title, summary, nextSteps = [], files = [], cwd = '' }) {
+  saveHandoff({ project, title, summary, nextSteps = [], files = [], cwd = '', agent = '' }) {
     if (!summary) throw new Error('A handoff needs a summary');
     const id = newId();
     let proj = project ? this.getProject(project) : null;
@@ -259,6 +259,7 @@ export class Store {
       files,
       cwd,
       device: this.device,
+      ...(agent ? { agent } : {}),
       status: 'open',
       createdAt: now(),
     };

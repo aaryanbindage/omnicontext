@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "omnicontext",
+  "version": "0.4.0",
+  "description": "Persistent memory shared by Codex, Claude and every other agent you use, on every device: your profile, your projects and their nicknames, and resumable handoffs.",
+  "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
+  "homepage": "https://aaryanbindage.github.io/omnicontext/",
+  "repository": "https://github.com/aaryanbindage/omnicontext",
+  "license": "MIT",
+  "keywords": ["memory", "context", "handoff", "cross-device", "projects", "sync"],
+  "extensions": {
+    "com.openai": {
+      "hooks": "./hooks/hooks.json",
+      "interface": {
+        "displayName": "OmniContext",
+        "shortDescription": "Shared memory across Codex, Claude and your devices",
+        "longDescription": "Codex knows who you are, what \"my game project\" means, and what you were doing in Claude on your laptop. Profile, projects with aliases, and resumable handoffs live in plain files you own, synced through a private git repo.",
+        "developerName": "aaryanbindage",
+        "category": "Productivity",
+        "capabilities": ["Read", "Write"],
+        "websiteURL": "https://aaryanbindage.github.io/omnicontext/",
+        "defaultPrompt": [
+          "Resume where I left off",
+          "What do you know about my projects?",
+          "Save a handoff so I can continue this in Claude"
+        ],
+        "brandColor": "#7C5CFF",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png"
+      }
+    }
+  }
+}

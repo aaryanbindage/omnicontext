@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "omnicontext": {
+      "command": "npx",
+      "args": ["-y", "@aaryanbindage/omnicontext", "mcp"]
+    }
+  }
+}

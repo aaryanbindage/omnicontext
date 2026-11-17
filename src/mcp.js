@@ -12,6 +12,26 @@ import { sync, syncStatus } from './sync.js';
 const text = (t) => ({ content: [{ type: 'text', text: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }] });
 const fail = (t) => ({ content: [{ type: 'text', text: t }], isError: true });
 
+/** Friendly name of the connected agent, from its MCP client info (or OMNICONTEXT_AGENT). */
+export function agentName(clientName = '') {
+  if (process.env.OMNICONTEXT_AGENT) return process.env.OMNICONTEXT_AGENT;
+  const n = clientName.toLowerCase();
+  const known = [
+    ['claude-code', 'Claude Code'],
+    ['claude', 'Claude'],
+    ['codex', 'Codex'],
+    ['cursor', 'Cursor'],
+    ['gemini', 'Gemini CLI'],
+    ['windsurf', 'Windsurf'],
+    ['vscode', 'VS Code'],
+    ['visual studio code', 'VS Code'],
+    ['zed', 'Zed'],
+    ['goose', 'Goose'],
+    ['cline', 'Cline'],
+  ];
+  return known.find(([k]) => n.includes(k))?.[1] || clientName;
+}
+
 /** How to get this device's checkout to where the handoff left off. */
 function gitSection(h, device) {
   const g = h.git;
@@ -25,7 +45,13 @@ function gitSection(h, device) {
 }
 
 export async function startMcpServer(store = new Store()) {
-  const server = new McpServer({ name: 'omnicontext', version: VERSION });
+  const server = new McpServer(
+    { name: 'omnicontext', version: VERSION },
+    {
+      instructions:
+        "OmniContext is the user's long-term memory, shared by every agent they use on every device. Call get_context at the start of a conversation (unless an OmniContext briefing is already in context), resolve loose project references against it, offer save_handoff before ending substantial work, and use remember / add_project_note for lasting facts. Never store secrets.",
+    },
+  );
 
   // Push writes to the sync remote shortly after they happen (debounced).
   let timer;
@@ -204,7 +230,7 @@ export async function startMcpServer(store = new Store()) {
     {
       title: 'Save handoff',
       description:
-        'Save the state of the current work so it can be resumed later in any Claude session on any device. Write it for a future assistant with no memory of this conversation: goal, what was done, key decisions, where things are, and concrete next steps.',
+        'Save the state of the current work so it can be resumed later in any session, by any agent (Claude, Codex, Cursor, …), on any device. Write it for a future assistant with no memory of this conversation: goal, what was done, key decisions, where things are, and concrete next steps.',
       inputSchema: {
         title: z.string().describe('Short title'),
         summary: z.string().describe('Self-contained summary of the work so far'),
@@ -218,7 +244,8 @@ export async function startMcpServer(store = new Store()) {
       const proj = project ? store.getProject(project) || resolveProjects(store.listProjects(), project, 1)[0]?.project : null;
       // Claude Code starts MCP servers in the project folder, so fall back to it to capture the git state.
       const dir = cwd || (gitStateOf(process.cwd()) ? process.cwd() : '');
-      const h = store.saveHandoff({ title, summary, nextSteps: next_steps, files, cwd: dir, project: proj?.slug || project });
+      const agent = agentName(server.server.getClientVersion()?.name || '');
+      const h = store.saveHandoff({ title, summary, nextSteps: next_steps, files, cwd: dir, project: proj?.slug || project, agent });
       changed();
       return text(`Handoff saved: ${h.id}. Resume on any device with "resume ${h.title}" or /omnicontext:resume.`);
     }),
@@ -267,7 +294,7 @@ export async function startMcpServer(store = new Store()) {
       const proj = h.project ? store.getProject(h.project) : null;
       const localPath = proj?.paths?.[store.device];
       return text(
-        `# Resuming: ${h.title}\nFrom ${h.device} at ${h.createdAt}${proj ? ` · project ${proj.name}` : ''}\n` +
+        `# Resuming: ${h.title}\nFrom ${h.device}${h.agent ? ` (${h.agent})` : ''} at ${h.createdAt}${proj ? ` · project ${proj.name}` : ''}\n` +
           (localPath ? `Project folder on this device: ${localPath}\n` : proj ? `Project folder isn't linked on this device yet.\n` : '') +
           gitSection(h, store.device) +
           `\n## Summary\n${h.summary}\n` +

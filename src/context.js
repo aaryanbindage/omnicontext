@@ -27,7 +27,7 @@ export function projectLine(p, device, current) {
 export function handoffLine(h) {
   const next = h.nextSteps?.length ? ` Next: ${h.nextSteps.slice(0, 2).join('; ')}` : '';
   const branch = h.git?.branch ? ` Branch \`${h.git.branch}\`.` : '';
-  return `- \`${h.id}\` **${h.title}**${h.project ? ` (${h.project})` : ''} — from ${h.device}, ${ago(h.createdAt)}.${branch}${next}`;
+  return `- \`${h.id}\` **${h.title}**${h.project ? ` (${h.project})` : ''} — from ${h.device}${h.agent ? ` via ${h.agent}` : ''}, ${ago(h.createdAt)}.${branch}${next}`;
 }
 
 const STALE_DAYS = 30;
