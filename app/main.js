@@ -5,6 +5,7 @@ const path = require('node:path');
 const fs = require('node:fs');
 import { Store, VERSION } from '../src/store.js';
 import { buildContext } from '../src/context.js';
+import { buildGraph } from '../src/graph.js';
 import { sync, initSync, createGithubRemote, syncStatus } from '../src/sync.js';
 import { installClaudeDesktop, installClaudeCode, claudeDesktopConfigPath } from '../src/install.js';
 
@@ -50,6 +51,7 @@ const api = {
   listHandoffs: (status) => store.listHandoffs({ status: status || 'all' }),
   setHandoffStatus: (id, status) => store.setHandoffStatus(id, status),
   deleteHandoff: (id) => store.deleteHandoff(id),
+  graph: () => buildGraph(store),
   listInbox: () => store.listInbox(),
   capture: (text, project) => store.capture(text, { project }),
   fileInbox: (id, opts) => store.fileInbox(id, opts),
@@ -108,10 +110,13 @@ function createWindow() {
   const shot = process.env.OMNICONTEXT_SCREENSHOT;
   if (shot) {
     const [file, tab = 'profile'] = shot.split(',');
+    win.webContents.on('console-message', (e) => console.log(`[renderer] ${e.message}`));
     win.webContents.once('did-finish-load', async () => {
       await win.webContents.executeJavaScript(`document.querySelector('nav button[data-tab="${tab}"]').click();`);
       await new Promise((r) => setTimeout(r, 800));
-      await win.webContents.executeJavaScript(`document.querySelector('#projectList li[data-slug]')?.click();`);
+      await win.webContents.executeJavaScript(
+        process.env.OMNICONTEXT_SCREENSHOT_JS || `document.querySelector('#projectList li[data-slug]')?.click();`,
+      );
       await new Promise((r) => setTimeout(r, 1200));
       fs.writeFileSync(file, (await win.webContents.capturePage()).toPNG());
       quitting = true;

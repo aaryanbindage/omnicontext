@@ -12,6 +12,7 @@
     <nav>
       <button data-tab="profile" class="active">About me</button>
       <button data-tab="projects">Projects</button>
+      <button data-tab="graph">Graph</button>
       <button data-tab="handoffs">Handoffs</button>
       <button data-tab="inbox">Inbox <span id="inboxCount" class="count" hidden></span></button>
       <button data-tab="sync">Sync &amp; devices</button>
@@ -64,6 +65,20 @@
           </div>
         </form>
       </div>
+    </section>
+
+    <section id="graph" class="tab wide">
+      <div class="graph-bar">
+        <input id="graphSearch" type="search" placeholder="Search the graph…" />
+        <div id="graphFilters" class="chips"></div>
+        <button id="graphFit" title="Fit to screen">Fit</button>
+      </div>
+      <div class="graph-wrap">
+        <canvas id="graphCanvas"></canvas>
+        <div id="graphPanel" class="graph-panel" hidden></div>
+        <div id="graphEmpty" class="empty" hidden>Add a project or a fact and it shows up here.</div>
+      </div>
+      <p class="muted small">Drag to move · scroll to zoom · click a node for details. Projects link through their tags, devices and handoffs, and whenever one is named in a note, fact or handoff. Write <code>[[Topic]]</code> in any note to link a topic.</p>
     </section>
 
     <section id="handoffs" class="tab">
@@ -145,6 +160,7 @@
     </section>
   </main>
   <div id="toast" hidden></div>
+  <script src="graph.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

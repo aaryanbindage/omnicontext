@@ -144,6 +144,78 @@ $('#handoffList').onclick = async (e) => {
   loadHandoffs();
 };
 
+// ---- graph --------------------------------------------------------------
+const TYPE_LABEL = { project: 'Projects', tag: 'Tags', topic: 'Topics', handoff: 'Handoffs', device: 'Devices', fact: 'Facts', inbox: 'Inbox', done: 'Finished handoffs' };
+const dot = (t) => `<i class="dot-${t}"></i>`;
+let graphView = null;
+let graphHidden = new Set(JSON.parse(localStorage.getItem('graphHidden') || '["done"]'));
+let graphFirst = true;
+
+function graphPanel(n, neighbours) {
+  const panel = $('#graphPanel');
+  panel.hidden = !n;
+  if (!n) return;
+  const groups = {};
+  for (const x of neighbours) (groups[x.type] ||= []).push(x);
+  panel.innerHTML = `<button class="close" title="Close">×</button>
+    <div class="type">${esc(n.type === 'you' ? 'profile' : n.type)}${n.status && n.type !== 'project' ? ' · ' + esc(n.status) : ''}</div>
+    <h3>${esc(n.label)}</h3>
+    ${n.detail && n.type !== 'you' ? `<p>${esc(n.detail)}</p>` : ''}
+    ${n.notes?.length ? `<p class="muted">${n.notes.slice(-3).map(esc).join('\n')}</p>` : ''}
+    ${n.type === 'project' ? '<div class="row"><button data-open-project>Open project</button></div>' : ''}
+    ${Object.entries(groups).sort((a, b) => b[1].length - a[1].length).map(([t, xs]) =>
+      `<div class="type group">${esc(TYPE_LABEL[t] || t)} (${xs.length})</div><ul>${xs.map((x) => `<li data-node="${esc(x.id)}">${dot(x.type)}${esc(x.label)}</li>`).join('')}</ul>`).join('')}`;
+  panel.querySelector('.close').onclick = () => graphView.focus(null) || (panel.hidden = true);
+  panel.querySelector('[data-open-project]')?.addEventListener('click', async () => {
+    document.querySelector('nav button[data-tab="projects"]').click();
+    await loadProjects();
+    showProject(projects.find((p) => p.slug === n.slug));
+  });
+  panel.querySelectorAll('[data-node]').forEach((li) => (li.onclick = () => graphView.focus(li.dataset.node)));
+}
+
+function renderGraphFilters() {
+  $('#graphFilters').innerHTML = Object.entries(TYPE_LABEL).map(([t, label]) =>
+    `<span class="chip ${graphHidden.has(t) ? 'off' : ''}" data-type="${t}">${t === 'done' ? '' : dot(t)}${label}</span>`).join('');
+}
+$('#graphFilters').onclick = (e) => {
+  const chip = e.target.closest('[data-type]');
+  if (!chip) return;
+  const t = chip.dataset.type;
+  graphHidden.has(t) ? graphHidden.delete(t) : graphHidden.add(t);
+  localStorage.setItem('graphHidden', JSON.stringify([...graphHidden]));
+  renderGraphFilters();
+  graphView.setHidden([...graphHidden]);
+};
+$('#graphSearch').oninput = (e) => graphView.search(e.target.value);
+$('#graphSearch').onkeydown = (e) => {
+  if (e.key !== 'Enter') return;
+  const q = e.target.value.trim().toLowerCase();
+  const hit = lastGraph?.nodes.find((n) => n.label.toLowerCase().includes(q));
+  if (hit) graphView.focus(hit.id);
+};
+$('#graphFit').onclick = () => graphView.fit();
+let lastGraph = null;
+
+async function loadGraph() {
+  if (!graphView) {
+    graphView = window.GraphView.mount($('#graphCanvas'), { onSelect: graphPanel });
+    renderGraphFilters();
+    graphView.setHidden([...graphHidden]);
+  }
+  const g = await call('graph');
+  const sig = JSON.stringify([g.nodes.map((n) => n.id + n.label + (n.status || '')), g.edges.length]);
+  if (sig === lastGraph?.sig) return;
+  lastGraph = { ...g, sig };
+  $('#graphEmpty').hidden = g.nodes.length > 1;
+  graphView.setData(g);
+  if (graphFirst) {
+    graphFirst = false;
+    graphView.settle();
+    graphView.fit();
+  }
+}
+
 // ---- inbox --------------------------------------------------------------
 async function loadInbox() {
   const [items, all] = await Promise.all([call('listInbox'), call('listProjects')]);
@@ -226,6 +298,7 @@ async function refresh(tab = document.querySelector('nav button.active').dataset
   $('#inboxCount').hidden = !n;
   $('#inboxCount').textContent = n;
   if (tab === 'inbox') loadInbox();
+  if (tab === 'graph') loadGraph();
   if (tab === 'profile' && document.activeElement !== $('#profileText')) $('#profileText').value = await call('getProfile');
   if (tab === 'projects') { await loadProjects(); if (current?.slug) showProject(projects.find((p) => p.slug === current.slug) || null); }
   if (tab === 'handoffs') loadHandoffs();
