@@ -118,3 +118,23 @@ test('export and import round-trip', () => {
   assert.deepEqual(r, { projects: 1, handoffs: 1, inbox: 0 });
   assert.match(b.getProfile(), /Likes tea/);
 });
+
+test('graph links projects by tags, mentions and wikilinks', async () => {
+  const { buildGraph, neighborhood } = await import('../src/graph.js');
+  const s = tmp();
+  s.upsertProject({ name: 'Starfall', aliases: ['my game'], tags: ['godot'] });
+  s.upsertProject({ name: 'Level Editor', tags: ['godot'], description: 'Tool for building Starfall levels' });
+  s.upsertProject({ name: 'Website' });
+  s.addProjectNote('website', 'Add a devlog page about [[Procedural Generation]]');
+  s.remember('Main game is my game');
+  s.saveHandoff({ project: 'starfall', title: 'Boss AI', summary: 'x' });
+  const g = buildGraph(s);
+  const has = (a, b) => g.edges.some((e) => (e.source === a && e.target === b) || (e.source === b && e.target === a));
+  assert.ok(has('project:starfall', 'tag:godot'));
+  assert.ok(has('project:level-editor', 'project:starfall'));
+  assert.ok(has('project:website', 'topic:procedural generation'));
+  assert.ok(has('fact:0', 'project:starfall'));
+  const near = neighborhood(g, ['tag:godot']).map((n) => n.id);
+  assert.deepEqual(near.sort(), ['project:level-editor', 'project:starfall']);
+  assert.ok(s.buildSnapshot().graph.edges.length > 5);
+});

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Store, VERSION, gitStateOf } from './store.js';
 import { resolveProjects } from './resolve.js';
 import { buildContext } from './context.js';
+import { buildGraph, neighborhood } from './graph.js';
 import { sync, syncStatus } from './sync.js';
 
 const text = (t) => ({ content: [{ type: 'text', text: typeof t === 'string' ? t : JSON.stringify(t, null, 2) }] });
@@ -312,6 +313,35 @@ export async function startMcpServer(store = new Store()) {
           hits.push({ in: `handoff:${h.id}`, text: h.title, status: h.status });
       for (const i of store.listInbox()) if (i.text.toLowerCase().includes(q)) hits.push({ in: `inbox:${i.id}`, text: i.text });
       return text(hits.length ? hits.slice(0, 30) : `Nothing found for "${query}".`);
+    }),
+  );
+
+  server.registerTool(
+    'related',
+    {
+      title: 'Find related things',
+      description:
+        'Walk the knowledge graph from a project, tag (e.g. "#godot"), device, or [[topic]]: returns linked projects, tags, handoffs, facts and inbox items. Use for "what else is connected to X" or "which of my projects use Y".',
+      inputSchema: {
+        query: z.string().describe('Project reference, #tag, device name, or topic'),
+        depth: z.number().int().min(1).max(3).optional().describe('Hops to follow (default 1)'),
+      },
+      annotations: { readOnlyHint: true },
+    },
+    guard(async ({ query, depth = 1 }) => {
+      const g = buildGraph(store);
+      const q = query.trim().toLowerCase().replace(/^\[\[|\]\]$/g, '');
+      let start = g.nodes.filter((n) => n.id !== 'you' && (n.label.toLowerCase() === q || n.label.toLowerCase() === `#${q}` || n.id.endsWith(`:${q}`)));
+      if (!start.length) {
+        const p = resolveProjects(store.listProjects(), query, 1)[0]?.project;
+        if (p) start = g.nodes.filter((n) => n.id === `project:${p.slug}`);
+      }
+      if (!start.length) return fail(`Nothing in the graph matches "${query}".`);
+      const hits = neighborhood(g, start.map((n) => n.id), depth);
+      return text({
+        from: start.map((n) => n.label),
+        related: hits.map(({ id, type, label, distance, status }) => ({ type, label, id, distance, ...(status ? { status } : {}) })),
+      });
     }),
   );
 

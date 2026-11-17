@@ -13,6 +13,7 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
+import { buildGraph } from './graph.js';
 
 export const VERSION = '0.2.0';
 
@@ -363,6 +364,7 @@ export class Store {
       projects,
       handoffs,
       inbox,
+      graph: compactGraph(buildGraph(this)),
     };
   }
   writeSnapshot() {
@@ -396,6 +398,14 @@ export class Store {
     for (const i of data.inbox || []) if (i?.id) writeJson(this.inboxPath(i.id), i);
     return { projects: (data.projects || []).length, handoffs: (data.handoffs || []).length, inbox: (data.inbox || []).length };
   }
+}
+
+/** Graph in a compact form for the watch: nodes [id, type, label], edges [source, target, kind]. */
+function compactGraph(g) {
+  return {
+    nodes: g.nodes.map((n) => [n.id, n.type, n.label]),
+    edges: g.edges.map((e) => [e.source, e.target, e.kind]),
+  };
 }
 
 function newId() {

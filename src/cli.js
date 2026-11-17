@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { Store, VERSION } from './store.js';
 import { buildContext, projectLine, handoffLine } from './context.js';
 import { resolveProjects } from './resolve.js';
+import { buildGraph, neighborhood } from './graph.js';
 import { sync, pull, initSync, createGithubRemote, syncStatus } from './sync.js';
 import { installClaudeDesktop, installClaudeCode } from './install.js';
 
@@ -25,6 +26,8 @@ Usage:
   omnicontext project note <project> "<note>"
   omnicontext resolve "<reference>"       e.g. omnicontext resolve "my game project"
   omnicontext handoffs [--all]            List handoffs
+  omnicontext graph [--json]              Knowledge graph: counts, hubs (or the full graph as JSON)
+  omnicontext related "<thing>"           What's linked to a project, #tag, device or topic
 
   omnicontext sync                        Sync now
   omnicontext sync --github [NAME]        Create a private GitHub repo (via gh) and sync to it
@@ -196,6 +199,30 @@ export async function main(argv = process.argv.slice(2)) {
       const hits = resolveProjects(store.listProjects(), pos.join(' '));
       if (!hits.length) return console.log('No match.');
       for (const h of hits) console.log(`${String(h.score).padStart(4)}  ${projectLine(h.project, store.device)}`);
+      return;
+    }
+
+    case 'graph': {
+      const g = buildGraph(store);
+      if (flags.json) return console.log(JSON.stringify(g, null, 2));
+      const by = {};
+      for (const n of g.nodes) by[n.type] = (by[n.type] || 0) + 1;
+      console.log(`${g.nodes.length} nodes, ${g.edges.length} links: ${Object.entries(by).map(([t, c]) => `${c} ${t}`).join(', ')}`);
+      console.log('Most connected:');
+      for (const n of g.nodes.filter((n) => n.id !== 'you').sort((a, b) => b.degree - a.degree).slice(0, 8)) console.log(`  ${String(n.degree).padStart(3)}  ${n.label} (${n.type})`);
+      return;
+    }
+
+    case 'related': {
+      const g = buildGraph(store);
+      const q = pos.join(' ').trim().toLowerCase();
+      let start = g.nodes.filter((n) => n.id !== 'you' && (n.label.toLowerCase() === q || n.id.endsWith(`:${q}`)));
+      if (!start.length) {
+        const p = resolveProjects(store.listProjects(), q, 1)[0]?.project;
+        if (p) start = g.nodes.filter((n) => n.id === `project:${p.slug}`);
+      }
+      if (!start.length) return console.log('No match.');
+      for (const n of neighborhood(g, start.map((n) => n.id))) console.log(`  ${n.label} (${n.type})`);
       return;
     }
 
