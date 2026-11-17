@@ -85,50 +85,80 @@ struct EgoGraph: View {
 
     var body: some View {
         GeometryReader { geo in
-            let w = geo.size.width, h = geo.size.height
-            let mid = CGPoint(x: w / 2, y: h / 2)
-            let r = min(w, h) * 0.38
-            let points: [CGPoint] = around.indices.map { i in
-                let a = Double(i) / Double(max(around.count, 1)) * 2 * .pi - .pi / 2
-                return CGPoint(x: mid.x + r * cos(a), y: mid.y + r * sin(a))
+            content(size: geo.size)
+        }
+    }
+
+    private func layout(_ size: CGSize) -> (mid: CGPoint, points: [CGPoint]) {
+        let mid = CGPoint(x: size.width / 2, y: size.height / 2)
+        let r: CGFloat = min(size.width, size.height) * 0.38
+        let count = Double(max(around.count, 1))
+        var points: [CGPoint] = []
+        for i in around.indices {
+            let a: Double = Double(i) / count * 2 * Double.pi - Double.pi / 2
+            points.append(CGPoint(x: mid.x + r * CGFloat(cos(a)), y: mid.y + r * CGFloat(sin(a))))
+        }
+        return (mid, points)
+    }
+
+    @ViewBuilder private func content(size: CGSize) -> some View {
+        let l = layout(size)
+        ZStack {
+            Spokes(mid: l.mid, points: l.points)
+            ForEach(Array(around.enumerated()), id: \.element.id) { item in
+                NodeDot(node: item.element, onTap: onTap)
+                    .position(l.points[item.offset])
             }
-
-            ZStack {
-                Canvas { ctx, _ in
-                    for p in points {
-                        var path = Path()
-                        path.move(to: mid)
-                        path.addLine(to: p)
-                        ctx.stroke(path, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
-                    }
-                }
-
-                ForEach(Array(around.enumerated()), id: \.element.id) { i, n in
-                    Button { onTap(n.id) } label: {
-                        VStack(spacing: 1) {
-                            Circle().fill(nodeColor(n.type)).frame(width: 12, height: 12)
-                            Text(n.label)
-                                .font(.system(size: 9))
-                                .lineLimit(1)
-                                .frame(maxWidth: 58)
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .position(points[i])
-                }
-
-                VStack(spacing: 2) {
-                    Circle().fill(nodeColor(center.type)).frame(width: 22, height: 22)
-                        .overlay(Circle().stroke(.white, lineWidth: 2))
-                    Text(center.label).font(.system(size: 11, weight: .semibold)).lineLimit(1).frame(maxWidth: 80)
-                }
-                .position(mid)
-
-                if extra > 0 {
-                    Text("+\(extra)").font(.caption2).foregroundStyle(.secondary)
-                        .position(x: w - 12, y: h - 8)
-                }
+            CenterDot(node: center).position(l.mid)
+            if extra > 0 {
+                Text("+\(extra)").font(.caption2).foregroundStyle(.secondary)
+                    .position(x: size.width - 12, y: size.height - 8)
             }
+        }
+    }
+}
+
+private struct Spokes: View {
+    let mid: CGPoint
+    let points: [CGPoint]
+
+    var body: some View {
+        Canvas { ctx, _ in
+            for p in points {
+                var path = Path()
+                path.move(to: mid)
+                path.addLine(to: p)
+                ctx.stroke(path, with: .color(.secondary.opacity(0.5)), lineWidth: 1)
+            }
+        }
+    }
+}
+
+private struct NodeDot: View {
+    let node: GraphNode
+    let onTap: (String) -> Void
+
+    var body: some View {
+        Button {
+            onTap(node.id)
+        } label: {
+            VStack(spacing: 1) {
+                Circle().fill(nodeColor(node.type)).frame(width: 12, height: 12)
+                Text(node.label).font(.system(size: 9)).lineLimit(1).frame(maxWidth: 58)
+            }
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+private struct CenterDot: View {
+    let node: GraphNode
+
+    var body: some View {
+        VStack(spacing: 2) {
+            Circle().fill(nodeColor(node.type)).frame(width: 22, height: 22)
+                .overlay(Circle().stroke(Color.white, lineWidth: 2))
+            Text(node.label).font(.system(size: 11, weight: .semibold)).lineLimit(1).frame(maxWidth: 80)
         }
     }
 }
