@@ -50,9 +50,10 @@ struct SignInView: View {
 struct HomeView: View {
     @EnvironmentObject var model: AppModel
     @State private var captured = false
+    @State private var path: [Route] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             List {
                 if let error = model.error {
                     Text(error).font(.footnote).foregroundStyle(.red)
@@ -87,6 +88,9 @@ struct HomeView: View {
                     NavigationLink(value: Route.projects) {
                         CountRow(title: "Projects", icon: "folder", count: model.projects.count)
                     }
+                    NavigationLink(value: Route.graph("you")) {
+                        Label("Graph", systemImage: "point.3.connected.trianglepath.dotted")
+                    }
                     NavigationLink(value: Route.profile) {
                         Label("About me", systemImage: "person.crop.circle")
                     }
@@ -112,8 +116,10 @@ struct HomeView: View {
                 case .profile: ProfileView()
                 case .inbox: InboxView()
                 case .settings: SettingsView()
+                case .graph(let id): GraphExplorer(center: id)
                 }
             }
+            .onAppear { if path.isEmpty, let r = model.demoRoute { path = demoPath(r) } }
         }
     }
 
@@ -159,6 +165,21 @@ enum Route: Hashable {
     case profile
     case inbox
     case settings
+    case graph(String)
+}
+
+extension HomeView {
+    /// OC_DEMO_ROUTE for simulator screenshots: graph, graph:project:starfall, projects, project:<slug>, handoff, profile, inbox.
+    func demoPath(_ r: String) -> [Route] {
+        if r == "graph" { return [.graph("you")] }
+        if r.hasPrefix("graph:") { return [.graph(String(r.dropFirst(6)))] }
+        if r == "projects" { return [.projects] }
+        if r.hasPrefix("project:"), let p = model.project(String(r.dropFirst(8))) { return [.projects, .project(p)] }
+        if r == "handoff", let h = model.openHandoffs.first { return [.handoff(h)] }
+        if r == "profile" { return [.profile] }
+        if r == "inbox" { return [.inbox] }
+        return []
+    }
 }
 
 // MARK: - Handoffs
@@ -291,6 +312,9 @@ struct ProjectDetail: View {
                 }
                 if let devices = project.devices, !devices.isEmpty {
                     Label(devices.joined(separator: ", "), systemImage: "laptopcomputer").font(.footnote)
+                }
+                NavigationLink(value: Route.graph("project:\(project.slug)")) {
+                    Label("Connections", systemImage: "point.3.connected.trianglepath.dotted")
                 }
 
                 TextFieldLink(prompt: Text("Note for \(project.name)")) {

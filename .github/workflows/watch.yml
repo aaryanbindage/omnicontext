@@ -1,7 +1,7 @@
 name: watchOS app
 on:
   push:
-    paths: ['watch/**', '.github/workflows/watch.yml']
+    paths: ['watch/**', 'src/**', 'scripts/demo-data.mjs', '.github/workflows/watch.yml']
   pull_request:
     paths: ['watch/**']
   workflow_dispatch:
@@ -10,15 +10,58 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - run: brew install xcodegen
       - name: Generate project
         working-directory: watch
         run: xcodegen generate
-      - name: Build for the watchOS simulator
+
+      - name: Pick a watch simulator
+        id: sim
+        run: |
+          xcrun simctl list devices available
+          udid=$(xcrun simctl list devices available -j | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0)).devices;
+            const all = Object.entries(d).filter(([r]) => /watchOS/.test(r)).flatMap(([, v]) => v);
+            const pick = all.find((x) => /Ultra/.test(x.name)) || all.find((x) => /Series/.test(x.name)) || all[0];
+            if (!pick) process.exit(1);
+            console.log(pick.udid);')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+
+      - name: Build for the simulator
         working-directory: watch
         run: |
           xcodebuild -project OmniContextWatch.xcodeproj -scheme OmniContext \
-            -destination 'generic/platform=watchOS Simulator' \
+            -destination "id=${{ steps.sim.outputs.udid }}" -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO build > build.log 2>&1 && ok=1 || ok=0
           grep -E 'error:|warning:|BUILD' build.log | sort -u | head -80 || true
           [ "$ok" = 1 ]
+
+      - name: Run it and take screenshots
+        run: |
+          set -x
+          udid=${{ steps.sim.outputs.udid }}
+          node scripts/demo-data.mjs "$RUNNER_TEMP/demo" --snapshot "$RUNNER_TEMP/demo.json"
+          xcrun simctl boot "$udid" || true
+          xcrun simctl bootstatus "$udid" -b
+          app=$(find watch/build/Build/Products -name '*.app' -maxdepth 3 | head -1)
+          bundle=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")
+          xcrun simctl install "$udid" "$app"
+          mkdir -p shots
+          export SIMCTL_CHILD_OC_DEMO_SNAPSHOT="$(cat "$RUNNER_TEMP/demo.json")"
+          for route in home graph graph:project:starfall projects project:starfall handoff profile inbox; do
+            xcrun simctl terminate "$udid" "$bundle" 2>/dev/null || true
+            SIMCTL_CHILD_OC_DEMO_ROUTE="$route" xcrun simctl launch "$udid" "$bundle"
+            sleep 6
+            xcrun simctl io "$udid" screenshot "shots/${route//:/_}.png"
+          done
+          # Crash check: the app must still be running after the last screen.
+          xcrun simctl spawn "$udid" launchctl list | grep -q "$bundle"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: watch-screenshots
+          path: shots/

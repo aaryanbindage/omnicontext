@@ -3,7 +3,13 @@ import SwiftUI
 
 @MainActor
 final class AppModel: ObservableObject {
-    @Published var snapshot: Snapshot?
+    @Published var snapshot: Snapshot? {
+        didSet { graph = KnowledgeGraph(snapshot?.graph) }
+    }
+    @Published private(set) var graph = KnowledgeGraph(nil)
+    /// Set when launched with OC_DEMO_SNAPSHOT (simulator screenshots): no network, no sign-in.
+    private(set) var demo = false
+    private(set) var demoRoute: String?
     @Published var lastRefresh: Date?
     @Published var loading = false
     @Published var error: String?
@@ -37,6 +43,19 @@ final class AppModel: ObservableObject {
         lastRefresh = UserDefaults.standard.object(forKey: "lastRefresh") as? Date
         if let data = try? Data(contentsOf: Self.cacheURL) {
             snapshot = try? JSONDecoder().decode(Snapshot.self, from: data)
+        }
+        graph = KnowledgeGraph(snapshot?.graph)
+
+        let env = ProcessInfo.processInfo.environment
+        if let json = env["OC_DEMO_SNAPSHOT"], let snap = try? JSONDecoder().decode(Snapshot.self, from: Data(json.utf8)) {
+            demo = true
+            snapshot = snap
+            graph = KnowledgeGraph(snap.graph)
+            signedIn = true
+            login = "demo"
+            repo = "demo/omnicontext-data"
+            lastRefresh = Date()
+            demoRoute = env["OC_DEMO_ROUTE"]
         }
     }
 
@@ -92,7 +111,7 @@ final class AppModel: ObservableObject {
 
     /// Refresh unless we did so in the last `ifOlderThan` seconds.
     func refresh(ifOlderThan age: TimeInterval = 0) async {
-        guard signedIn, !repo.isEmpty, !loading else { return }
+        guard signedIn, !repo.isEmpty, !loading, !demo else { return }
         if age > 0, let last = lastRefresh, Date().timeIntervalSince(last) < age { return }
         loading = true
         defer { loading = false }
