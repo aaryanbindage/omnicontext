@@ -6,7 +6,14 @@ A standalone watchOS app (no iPhone app, and the phone doesn't need to be nearby
 - **Projects**: descriptions, nicknames, notes and handoffs.
 - **About me**: your profile.
 - **Capture**: dictate a thought (or a note on a project). It lands in `inbox/` in your data repo, and the next Claude session on any device offers to file it as a fact or project note.
+- **Graph**: walk your knowledge graph one node at a time. Start from you or from a project's **Connections**, and tap any linked project, tag, topic or handoff to move there.
 - Works offline from the last download.
+
+| Home | Graph | Project | Handoff |
+|---|---|---|---|
+| ![](../docs/watch/home.png) | ![](../docs/watch/graph_project_starfall.png) | ![](../docs/watch/project_starfall.png) | ![](../docs/watch/handoff.png) |
+
+CI builds the app on every change, runs it in the watchOS simulator with sample data, and takes these screenshots (`.github/workflows/watch.yml`).
 
 Requirements: OmniContext 0.2.0+ syncing to a **GitHub** repo (`omnicontext sync --github`), watchOS 10+, and a Mac with Xcode 15+ to install it.
 

@@ -2,7 +2,7 @@
 name: omnicontext
 description: Persistent, cross-device memory for the user. Use when the user refers to their projects loosely ("my game project", "the website", "that bot"), says resume / continue / pick up where I left off, shares a lasting fact or preference about themselves, says something is no longer true, finishes or pauses a chunk of work, switches devices, or asks what you know about them.
 summary: Give your agent long-term memory of who you are, your projects and their nicknames, and resumable handoffs that sync across all your devices through a private git repo you own.
-version: 0.2.0
+version: 0.3.0
 tags: [memory, context, handoff, cross-device, projects, mcp, claude-code, productivity]
 keywords: [long-term memory, persistent context, resume work, project aliases, session handoff, sync]
 use_cases:
@@ -46,6 +46,10 @@ When the user says "my game project", "the API" or "my portfolio", match it agai
 - New lasting fact about the user → `remember` (one concise line). A fact is no longer true → `forget`.
 - Project decisions and status → `add_project_note`.
 - Never store secrets, credentials or one-off trivia.
+
+## Connections
+
+"What else uses X?" or "what's related to my game" → `related` (a project, `#tag`, device or topic). Write `[[Topic]]` in notes to link ideas across projects.
 
 ## Inbox
 

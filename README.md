@@ -33,6 +33,7 @@ Claude:                Resuming Starfall (the Godot space roguelike). Last sessi
 - **Resumes across devices.** `/omnicontext:handoff` saves a self-contained summary and next steps, plus the git branch and commit and any uncommitted or unpushed work. On another machine, `/omnicontext:resume` picks it up, opens the project's folder on that device, and tells you how to get the checkout to the same state.
 - **Inbox for quick thoughts.** Dictate on your Apple Watch, or run `omnicontext capture "…"`. The next Claude session offers to file each one as a profile fact or a project note (`/omnicontext:inbox`).
 - **Apple Watch app.** A standalone watchOS viewer that needs no iPhone. It shows open handoffs, projects and your profile, lets you mark handoffs done, and dictates captures. It talks straight to your private GitHub data repo. See [watch/](watch/).
+- **Knowledge graph, Obsidian-style.** The desktop app's Graph tab draws everything in memory: you, projects, tags, devices, handoffs, facts, inbox and `[[Topics]]`. Projects link through shared tags and whenever one names another. Drag, zoom, search and filter, and click a node to see its connections. Claude can walk it with the `related` tool ("what else uses Godot?"), and the watch app can browse it too.
 - **Forgets on request.** "That's not true anymore" → `forget`.
 - **Syncs without a cloud service.** Your memory is a folder of plain Markdown and JSON files (`~/.omnicontext`) synced through a **private git repo you own**. Nothing goes to a third-party server.
 - **Works everywhere.** It's a Claude Code plugin with auto-injected context, an MCP server for Claude Desktop, Cursor, VS Code, Windsurf and Zed, a desktop app for Mac, Windows and Linux, and a CLI.
@@ -130,6 +131,7 @@ You can do the same from the desktop app's **Sync & devices** tab. After that, s
 | `resolve_project` | "my game project" → the matching project, ranked |
 | `save_handoff` / `list_handoffs` / `resume_handoff` / `complete_handoff` | Cross-device resume |
 | `capture` / `list_inbox` / `file_inbox` | Quick captures (for example from the watch) and filing them |
+| `related` | Walk the knowledge graph from a project, #tag, device or [[topic]] |
 | `search_memory` | Search the profile, notes, handoffs, and inbox |
 | `sync_now` | Push and pull with your other devices |
 
