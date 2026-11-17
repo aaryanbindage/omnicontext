@@ -13,6 +13,8 @@ const HELP = `omnicontext ${VERSION} — persistent, cross-device memory for Cla
 
 Usage:
   omnicontext mcp                         Run the MCP server (stdio)
+  omnicontext serve [--port 8787] [--tunnel] [--public URL] [--rotate]
+                                          MCP over HTTP for ChatGPT and other URL-only agents
   omnicontext context [--cwd DIR]         Print the briefing Claude sees
   omnicontext status                      Data folder, device, sync state
 
@@ -91,6 +93,25 @@ export async function main(argv = process.argv.slice(2)) {
   if (cmd === 'mcp') {
     const { startMcpServer } = await import('./mcp.js');
     return startMcpServer();
+  }
+
+  if (cmd === 'serve') {
+    const { startHttpServer, startTunnel, serveToken } = await import('./http.js');
+    const store = new Store();
+    if (flags.rotate) serveToken(store, { rotate: true });
+    const { port, path } = await startHttpServer({ store, port: Number(flags.port || 8787), host: flags.host || '127.0.0.1' });
+    let base = flags.public ? String(flags.public).replace(/\/$/, '') : '';
+    if (flags.tunnel) base = (await startTunnel(port)).url;
+    console.log(`OmniContext MCP server on http://127.0.0.1:${port}${path}`);
+    if (base) {
+      console.log(`\nPublic URL for ChatGPT:\n  ${base}${path}\n`);
+      console.log('ChatGPT → Settings → Apps & Connectors → Advanced → Developer mode on, then Create:');
+      console.log('  name OmniContext, MCP server URL above, authentication: No authentication.');
+    } else {
+      console.log('\nChatGPT needs a public https URL: re-run with --tunnel (needs cloudflared), or --public <https URL> if you proxy it yourself.');
+    }
+    console.log('\nAnyone with this URL can read and write your memory. Keep it private; `omnicontext serve --rotate` makes a new one.');
+    return new Promise(() => {});
   }
 
   const store = new Store();

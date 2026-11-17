@@ -1,6 +1,6 @@
 {
   "name": "@aaryanbindage/omnicontext",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Persistent, cross-device memory shared by every AI agent: Claude Code, Claude Desktop, OpenAI Codex, Cursor, Gemini CLI and any MCP client. Your profile, your projects, and resumable handoffs.",
   "type": "module",
   "bin": {

@@ -20,6 +20,8 @@ export function agentName(clientName = '') {
     ['claude-code', 'Claude Code'],
     ['claude', 'Claude'],
     ['codex', 'Codex'],
+    ['chatgpt', 'ChatGPT'],
+    ['openai', 'ChatGPT'],
     ['cursor', 'Cursor'],
     ['gemini', 'Gemini CLI'],
     ['windsurf', 'Windsurf'],
@@ -44,7 +46,8 @@ function gitSection(h, device) {
   return lines.join('\n') + '\n';
 }
 
-export async function startMcpServer(store = new Store()) {
+/** Build the OmniContext MCP server (any transport). `flush()` pushes a pending sync right away. */
+export function createMcpServer(store = new Store(), { agent: defaultAgent = '' } = {}) {
   const server = new McpServer(
     { name: 'omnicontext', version: VERSION },
     {
@@ -244,7 +247,8 @@ export async function startMcpServer(store = new Store()) {
       const proj = project ? store.getProject(project) || resolveProjects(store.listProjects(), project, 1)[0]?.project : null;
       // Claude Code starts MCP servers in the project folder, so fall back to it to capture the git state.
       const dir = cwd || (gitStateOf(process.cwd()) ? process.cwd() : '');
-      const agent = agentName(server.server.getClientVersion()?.name || '');
+      const clientName = server.server.getClientVersion()?.name;
+      const agent = clientName ? agentName(clientName) : defaultAgent;
       const h = store.saveHandoff({ title, summary, nextSteps: next_steps, files, cwd: dir, project: proj?.slug || project, agent });
       changed();
       return text(`Handoff saved: ${h.id}. Resume on any device with "resume ${h.title}" or /omnicontext:resume.`);
@@ -476,17 +480,25 @@ export async function startMcpServer(store = new Store()) {
     }),
   );
 
+  const flush = () => {
+    if (!timer) return;
+    clearTimeout(timer);
+    timer = null;
+    try {
+      if (syncStatus(store.home).configured) sync(store.home, store.device);
+    } catch {}
+  };
+  return { server, flush };
+}
+
+export async function startMcpServer(store = new Store()) {
+  const { server, flush } = createMcpServer(store);
   await server.connect(new StdioServerTransport());
   // Flush any pending sync before exit.
-  const flush = () => {
-    if (timer) {
-      clearTimeout(timer);
-      try {
-        if (syncStatus(store.home).configured) sync(store.home, store.device);
-      } catch {}
-    }
+  const exit = () => {
+    flush();
     process.exit(0);
   };
-  process.stdin.on('close', flush);
-  process.on('SIGTERM', flush);
+  process.stdin.on('close', exit);
+  process.on('SIGTERM', exit);
 }

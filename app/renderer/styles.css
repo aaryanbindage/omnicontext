@@ -106,3 +106,5 @@ main:has(#graph.active) { display: flex; flex-direction: column; }
 .dot-fact { background: #16a34a; }
 .dot-inbox { background: #e11d48; }
 .graph-panel .type.group { margin-top: 10px; }
+.hint { color: var(--muted); font-size: 13px; }
+#chatgptUrl { flex: 1; min-width: 0; }

@@ -308,3 +308,15 @@ async function refresh(tab = document.querySelector('nav button.active').dataset
   if (tab === 'preview') $('#contextPreview').textContent = await call('context');
 }
 refresh('profile');
+
+// ChatGPT link (HTTP MCP server + tunnel, run by the main process)
+const showChatgpt = (url) => ($('#chatgptUrl').value = url || '');
+const startChatgpt = (rotate) => {
+  $('#chatgptUrl').value = 'Starting… (first run downloads cloudflared)';
+  return act(() => call('chatgptStart', rotate), 'ChatGPT link ready. Paste it into ChatGPT as a new connector.').then(showChatgpt, () => showChatgpt(''));
+};
+$('#chatgptStart').onclick = () => startChatgpt(false);
+$('#chatgptRotate').onclick = () => startChatgpt(true);
+$('#chatgptStop').onclick = () => act(() => call('chatgptStop'), 'ChatGPT link stopped').then(() => showChatgpt(''));
+$('#chatgptCopy').onclick = () => $('#chatgptUrl').value.startsWith('https://') && act(() => call('copy', $('#chatgptUrl').value), 'Copied');
+call('chatgptStatus').then(showChatgpt);

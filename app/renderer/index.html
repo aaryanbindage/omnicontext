@@ -149,6 +149,13 @@
         <div class="row"><button id="installCodex" class="primary">Install for Codex</button></div>
       </div>
       <div class="card">
+        <h3>ChatGPT</h3>
+        <p>ChatGPT can only reach servers on the internet, so this shares your memory through a private link (a Cloudflare tunnel) while this app is running. In ChatGPT: <b>Settings → Apps &amp; Connectors → Advanced → Developer mode</b>, then <b>Create</b> with the link below and <b>No authentication</b>. Requires Node.js 18+.</p>
+        <p class="hint">Anyone with the link can read and write your memory, so keep it to yourself. The link changes each time the app starts; paste the new one into ChatGPT.</p>
+        <div class="row"><button id="chatgptStart" class="primary">Start ChatGPT link</button><button id="chatgptStop">Stop</button><button id="chatgptRotate">New secret</button></div>
+        <div class="row"><input id="chatgptUrl" readonly placeholder="Not running" /><button id="chatgptCopy">Copy</button></div>
+      </div>
+      <div class="card">
         <h3>Cursor and Gemini CLI</h3>
         <p>Adds the MCP server to <code>~/.cursor/mcp.json</code> or <code>~/.gemini/settings.json</code> (plus <code>GEMINI.md</code> instructions). Requires Node.js 18+.</p>
         <div class="row"><button id="installCursor">Install for Cursor</button><button id="installGemini">Install for Gemini CLI</button></div>

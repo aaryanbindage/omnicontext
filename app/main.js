@@ -7,6 +7,7 @@ import { Store, VERSION } from '../src/store.js';
 import { buildContext } from '../src/context.js';
 import { buildGraph } from '../src/graph.js';
 import { sync, initSync, createGithubRemote, syncStatus } from '../src/sync.js';
+import { startHttpServer, startTunnel, serveToken } from '../src/http.js';
 import { installClaudeDesktop, installClaudeCode, installCodex, installCursor, installGemini, claudeDesktopConfigPath } from '../src/install.js';
 
 const store = new Store();
@@ -18,6 +19,17 @@ let lastSync = null;
 function serverScript() {
   const packaged = path.join(process.resourcesPath, 'omnicontext.mjs');
   return fs.existsSync(packaged) ? packaged : path.join(__dirname, '..', '..', 'dist', 'omnicontext.mjs');
+}
+
+// ChatGPT link: the MCP server over HTTP behind a Cloudflare quick tunnel, alive while the app runs.
+let chatgpt = null;
+function stopChatgpt() {
+  if (!chatgpt) return;
+  try {
+    chatgpt.child.kill();
+  } catch {}
+  chatgpt.srv.close();
+  chatgpt = null;
 }
 
 function doSync() {
@@ -79,6 +91,21 @@ const api = {
         : { command: process.execPath, args: [serverScript(), 'mcp'], env: { ELECTRON_RUN_AS_NODE: '1' } },
     ),
   installCode: () => installClaudeCode(),
+  chatgptStatus: () => (chatgpt ? chatgpt.url : null),
+  chatgptStart: async (rotate) => {
+    stopChatgpt();
+    if (rotate) serveToken(store, { rotate: true });
+    const srv = await startHttpServer({ store, port: 0 });
+    try {
+      const t = await startTunnel(srv.port);
+      chatgpt = { srv, child: t.child, url: t.url + srv.path };
+    } catch (e) {
+      srv.close();
+      throw e;
+    }
+    return chatgpt.url;
+  },
+  chatgptStop: () => stopChatgpt(),
   installCodex: () => installCodex(),
   installCursor: () => installCursor(),
   installGemini: () => installGemini(),
@@ -180,6 +207,7 @@ if (!app.requestSingleInstanceLock()) {
   });
   app.on('before-quit', () => {
     quitting = true;
+    stopChatgpt();
     try {
       if (syncStatus(store.home).configured) sync(store.home, store.device, { timeout: 10000 });
     } catch {}

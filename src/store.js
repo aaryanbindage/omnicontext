@@ -15,7 +15,7 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { buildGraph } from './graph.js';
 
-export const VERSION = '0.4.0';
+export const VERSION = '0.4.1';
 
 export function defaultHome() {
   return process.env.OMNICONTEXT_HOME || path.join(os.homedir(), '.omnicontext');

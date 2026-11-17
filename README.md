@@ -3,7 +3,7 @@
 <h1 align="center">OmniContext</h1>
 
 <p align="center"><b>One memory for every AI agent, on every device.</b><br/>
-Claude Code, Claude Desktop, OpenAI Codex, Cursor, Gemini CLI and any MCP client, on any of your machines, know who you are, what you're working on, and where you left off. Start in Claude, resume in Codex.</p>
+Claude Code, Claude Desktop, ChatGPT, OpenAI Codex, Cursor, Gemini CLI and any MCP client, on any of your machines, know who you are, what you're working on, and where you left off. Start in Claude, resume in Codex.</p>
 
 <p align="center">
 <a href="https://github.com/aaryanbindage/omnicontext/releases/latest">Download (Mac · Windows · Linux)</a> ·
@@ -93,6 +93,17 @@ npx -y @aaryanbindage/omnicontext install codex
 ```
 
 This adds `[mcp_servers.omnicontext]` to `~/.codex/config.toml` and a short OmniContext section to `~/.codex/AGENTS.md`. Re-running it updates both in place.
+
+### ChatGPT
+
+ChatGPT (web, desktop and mobile) connects to MCP servers by URL, so OmniContext runs an HTTP endpoint on your computer and shares it through a Cloudflare quick tunnel:
+
+- **Desktop app:** **Connect agents → ChatGPT → Start ChatGPT link**, then copy the link.
+- **CLI:** `npx -y @aaryanbindage/omnicontext serve --tunnel` prints the link. It uses `cloudflared` if installed, otherwise downloads it via npm.
+
+In ChatGPT, open **Settings → Apps & Connectors → Advanced**, turn on **Developer mode**, then **Create** a connector with that URL and **No authentication**. Enable it in a chat (or under the + menu) and ask "what do you know about my projects?". Developer mode availability depends on your ChatGPT plan.
+
+The link contains a random secret (`/mcp/<secret>`), and anyone with it can read and write your memory, so keep it private; `omnicontext serve --rotate` (or **New secret**) replaces it. Quick-tunnel links change each time the tunnel starts, and the link only works while your computer is on. For a permanent address, put `omnicontext serve --port 8787` behind your own HTTPS proxy or named tunnel and pass `--public https://your.host`.
 
 ### Every agent at once
 

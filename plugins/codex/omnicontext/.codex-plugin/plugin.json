@@ -1,6 +1,6 @@
 {
   "name": "omnicontext",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Persistent memory shared by Codex, Claude and every other agent you use, on every device: your profile, your projects and their nicknames, and resumable handoffs.",
   "author": { "name": "aaryanbindage", "url": "https://github.com/aaryanbindage" },
   "homepage": "https://aaryanbindage.github.io/omnicontext/",
