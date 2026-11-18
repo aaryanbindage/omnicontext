@@ -19,6 +19,8 @@ Claude Code, Claude Desktop, ChatGPT, OpenAI Codex, Cursor, Gemini CLI and any M
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
+[![OmniContext MCP server](https://mcprush.com/badge/omnicontext-mcp/card.svg)](https://mcprush.com/to/omnicontext-mcp?ref=badge)
+
 ---
 
 ```text
