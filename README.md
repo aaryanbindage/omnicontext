@@ -16,11 +16,12 @@ Claude Code, Claude Desktop, ChatGPT, OpenAI Codex, Cursor, Gemini CLI and any M
 <p align="center">
 <a href="https://www.npmjs.com/package/@aaryanbindage/omnicontext"><img alt="npm" src="https://img.shields.io/npm/v/@aaryanbindage/omnicontext"></a>
 <a href="https://github.com/aaryanbindage/omnicontext/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/aaryanbindage/omnicontext/actions/workflows/ci.yml/badge.svg"></a>
+<a href="[![M8ven Score](https://m8ven.ai/badge/mcp/aaryanbindage-omnicontext-4navub?v=73d80036ee50e0a7f8cbe6d6ae403a1a)](https://m8ven.ai/mcp/aaryanbindage-omnicontext-4navub?s=readme)"></a>
+
 <a href="LICENSE"><img alt="MIT" src="https://img.shields.io/badge/license-MIT-blue"></a>
 </p>
 
 [![OmniContext MCP server](https://mcprush.com/badge/omnicontext-mcp/card.svg)](https://mcprush.com/to/omnicontext-mcp?ref=badge)
-[![M8ven Score](https://m8ven.ai/badge/mcp/aaryanbindage-omnicontext-4navub?v=73d80036ee50e0a7f8cbe6d6ae403a1a)](https://m8ven.ai/mcp/aaryanbindage-omnicontext-4navub?s=readme)
 
 ---
 
