@@ -20,6 +20,7 @@ Claude Code, Claude Desktop, ChatGPT, OpenAI Codex, Cursor, Gemini CLI and any M
 </p>
 
 [![OmniContext MCP server](https://mcprush.com/badge/omnicontext-mcp/card.svg)](https://mcprush.com/to/omnicontext-mcp?ref=badge)
+[![M8ven Score](https://m8ven.ai/badge/mcp/aaryanbindage-omnicontext-4navub?v=73d80036ee50e0a7f8cbe6d6ae403a1a)](https://m8ven.ai/mcp/aaryanbindage-omnicontext-4navub?s=readme)
 
 ---
 
